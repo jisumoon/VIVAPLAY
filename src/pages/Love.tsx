@@ -5,6 +5,7 @@ import { Movie, getMovies, getCertification } from "../api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { makeImagePath } from "../utils";
+import Pagination from "react-js-pagination";
 
 const Container = styled.div`
   width: 100%;
@@ -28,7 +29,7 @@ const Title = styled.h2`
 const Message = styled.div`
   color: ${(props) => props.theme.white.darker};
   font-size: 18px;
-  padding-left: 40px;
+  padding-left: 30px;
   margin-top: 50px;
 `;
 
@@ -36,26 +37,28 @@ const MovieGrid = styled.div`
   display: flex;
   padding-left: 30px;
   flex-wrap: wrap;
-  gap: 50px;
+  gap: 40px;
   @media (max-width: 768px) {
     gap: 20px;
   }
 
   @media (max-width: 400px) {
-    gap: 10px;
+    justify-content: space-between;
+    padding: 0 20px;
   }
 `;
 
 const MovieCard = styled.div`
-  width: 240px;
-  height: 150px;
-  background: ${(props) => props.theme.black.darker};
-  border-radius: 4px;
+  width: 250px;
+  height: 200px;
+  border-radius: 10px;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s ease;
+  margin-bottom: 20px;
   cursor: pointer;
+
   &:hover {
     transform: scale(1.05);
   }
@@ -75,7 +78,7 @@ const MoviePoster = styled.div<{ $bgPhoto: string }>`
   background-image: url(${(props) => props.$bgPhoto});
   background-size: cover;
   background-position: center;
-  cursor: pointer;
+  transition: transform 0.3s ease;
 `;
 
 const Overlay = styled.div`
@@ -91,9 +94,15 @@ const Overlay = styled.div`
   padding: 0 10px;
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
+  backdrop-filter: blur(2px);
+
+  div {
+    display: flex;
+    gap: 10px;
+  }
 
   .title {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -101,21 +110,12 @@ const Overlay = styled.div`
   }
 
   .age-restriction {
-    font-size: 12px;
+    font-size: 14px;
     padding: 2px 5px;
     color: white;
     border-radius: 4px;
     font-weight: bold;
     background: ${(props) => props.theme.blue.lighter};
-  }
-
-  div {
-    &:nth-child(2) {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-    }
   }
 `;
 
@@ -130,13 +130,48 @@ const FavoriteIcon = styled(FontAwesomeIcon)<{ $isFavorite: boolean }>`
   }
 `;
 
+const StyledPagination = styled.div`
+  display: flex;
+  justify-content: center;
+  padding-top: 100px;
+
+  @media (max-width: 768px) {
+    padding-top: 50px;
+  }
+  ul {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    li {
+      margin: 0 5px;
+      a {
+        color: ${(props) => props.theme.white.darker};
+        padding: 5px 10px;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background 0.3s;
+        &:hover {
+          background: ${(props) => props.theme.blue.darker};
+        }
+      }
+      &.active a {
+        background: ${(props) => props.theme.blue.darker};
+        color: white;
+      }
+    }
+  }
+`;
+
 const Love = () => {
   const [favoriteMovies, setFavoriteMovies] = useState<Movie[]>([]);
   const navigate = useNavigate();
   const [certifications, setCertifications] = useState<Record<number, string>>(
     {}
   );
+  const [currentPage, setCurrentPage] = useState(1);
+  const moviesPerPage = 20;
 
+  //즐겨찾기 데이터
   useEffect(() => {
     const fetchFavoriteMovies = async () => {
       const savedFavorites = localStorage.getItem("favoriteMovies");
@@ -153,6 +188,7 @@ const Love = () => {
     fetchFavoriteMovies();
   }, []);
 
+  //인증데이터
   useEffect(() => {
     const fetchCertifications = async () => {
       const results: Record<number, string> = {};
@@ -189,9 +225,13 @@ const Love = () => {
     });
   };
 
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <Container>
-      <Title>🔍내가 즐겨찾는 영화</Title>
+      <Title>내가 즐겨찾는 영화</Title>
       <div>
         {favoriteMovies.length > 0 ? (
           <MovieGrid>
@@ -225,6 +265,15 @@ const Love = () => {
           <Message>즐겨찾는 영화가 없습니다.</Message>
         )}
       </div>
+      <StyledPagination>
+        <Pagination
+          activePage={currentPage}
+          itemsCountPerPage={moviesPerPage}
+          totalItemsCount={favoriteMovies.length}
+          pageRangeDisplayed={5}
+          onChange={handlePageChange}
+        />
+      </StyledPagination>
     </Container>
   );
 };

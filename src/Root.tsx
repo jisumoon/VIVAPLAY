@@ -34,6 +34,17 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'Pretendard-Regular';
     background: ${(props) => props.theme.black.lighter};
   }
+
+  .slick-slide {
+  transition: filter 0.3s ease-in-out;
+}
+
+.slick-center {
+  filter: brightness(100%);
+
+  transition: filter 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
 `;
 
 const MobileHeaderWrapper = styled.div`

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import Slider from "react-slick";
 import { makeImagePath } from "../../utils";
@@ -17,13 +17,21 @@ interface SliderProps {
 
 const Container = styled.div`
   position: relative;
-  margin-top: 30px;
-  overflow: hidden;
+  margin-top: 50px;
+  margin-bottom: 50px;
+  padding: 0 40px;
+
+  @media (max-width: 768px) {
+    padding: 0;
+  }
+  @media (max-width: 400px) {
+    padding: 0;
+  }
 `;
 
 const SliderTitle = styled.h3`
   font-size: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   color: ${(props) => props.theme.white.lighter};
   padding-left: 20px;
 `;
@@ -64,15 +72,26 @@ const StyledSlider = styled(Slider)`
 `;
 
 const Box = styled.div<{ $bgPhoto: string }>`
-  height: 160px;
-  background: url(${(props) => props.$bgPhoto}) center/cover no-repeat;
-  border-radius: 4px;
-  cursor: pointer;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 8px;
+  overflow: hidden;
 
   &:hover {
     transform: scale(1.05);
-    transition: transform 0.3s ease-in-out;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); /* 그림자 효과 */
+  }
+
+  .box-image {
+    width: 100%;
+    height: 180px;
+    background: url(${(props) => props.$bgPhoto}) center/cover no-repeat;
+    border-radius: 8px;
   }
 `;
 
@@ -89,9 +108,10 @@ const Overlay = styled.div`
   padding: 0 10px;
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
+  backdrop-filter: blur(2px);
 
   .title {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -99,7 +119,7 @@ const Overlay = styled.div`
   }
 
   .age-restriction {
-    font-size: 12px;
+    font-size: 14px;
     padding: 2px 5px;
     color: white;
     border-radius: 4px;
@@ -112,63 +132,48 @@ const Info = styled.div`
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 104%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
+  width: 100%;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.85); /* 어두운 배경 */
   color: ${(props) => props.theme.white.lighter};
-  padding: 20px;
+  border-radius: 0 0 8px 8px;
+  text-align: left;
   opacity: 0;
-  transition: opacity 0.5s ease-in-out;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 
   ${Box}:hover & {
     opacity: 1;
-  }
-
-  h4 {
-    font-size: 18px;
-    margin-bottom: 15px;
-    font-weight: bold;
+    transform: translateY(0);
   }
 
   .info-buttons {
+    margin-top: 5px;
     display: flex;
-    align-items: center;
     gap: 10px;
 
     svg {
-      font-size: 12px;
+      font-size: 14px;
       cursor: pointer;
-      width: 14px;
-      height: 14px;
+      transition: transform 0.3s ease;
+      border: 1px solid #fff;
       border-radius: 50%;
+      width: 15px;
+      height: 15px;
       padding: 10px;
-      transition: all 0.3s ease;
-
-      &:nth-of-type(1) {
-        background: ${(props) => props.theme.blue.lighter};
-        color: ${(props) => props.theme.white.lighter};
-        &:hover {
-          background: ${(props) => props.theme.blue.darker};
-        }
-      }
-
-      &:nth-of-type(2) {
-        border: 2px solid ${(props) => props.theme.white.darker};
-        background: transparent;
-        color: ${(props) => props.theme.white.lighter};
-        &:hover {
-          border-color: ${(props) => props.theme.blue.lighter};
-        }
+      transition: color 0.3s border 0.3s;
+      &:hover {
+        color: ${(props) => props.theme.blue.darker};
+        border: 1px solid ${(props) => props.theme.blue.darker};
       }
     }
   }
 
   .info-rating {
+    margin-top: 10px;
     font-size: 14px;
+    font-weight: 400;
     color: ${(props) => props.theme.white.darker};
-    margin-top: 14px;
-    text-align: left;
   }
 `;
 
@@ -181,6 +186,9 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
   const [certifications, setCertifications] = useState<Record<number, string>>(
     {}
   );
+  const sliderRef = useRef<Slider | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState<number>(0); // 포커스된 슬라이드 인덱스
+  const [isFavoriteFocused, setIsFavoriteFocused] = useState<boolean>(false); // 좋아요 버튼 포커스 상태
 
   useEffect(() => {
     const fetchCertifications = async () => {
@@ -201,12 +209,51 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
     fetchCertifications();
   }, [movies]);
 
+  // TV 리모컨 키 입력 처리
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case "ArrowRight": // 오른쪽 키: 다음 슬라이드로 이동
+          setIsFavoriteFocused(false); // 좋아요 버튼에서 포커스 해제
+          setFocusedIndex((prev) => Math.min(prev + 1, movies.length - 1));
+          sliderRef.current?.slickNext();
+          break;
+        case "ArrowLeft": // 왼쪽 키: 이전 슬라이드로 이동
+          setIsFavoriteFocused(false); // 좋아요 버튼에서 포커스 해제
+          setFocusedIndex((prev) => Math.max(prev - 1, 0));
+          sliderRef.current?.slickPrev();
+          break;
+        case "ArrowUp": // 위쪽 키: 좋아요 버튼 포커스
+          setIsFavoriteFocused(true);
+          break;
+        case "ArrowDown": // 아래쪽 키: 슬라이드 포커스
+          setIsFavoriteFocused(false);
+          break;
+        case "Enter": // 엔터 키: 현재 포커스된 요소 클릭
+          if (isFavoriteFocused) {
+            toggleFavorite(movies[focusedIndex].id); // 좋아요 버튼 클릭
+          } else {
+            navigate(`/movies/${movies[focusedIndex].id}`); // 슬라이드 상세 보기
+          }
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [focusedIndex, isFavoriteFocused, movies, navigate]);
+
   const settings = {
     dots: false,
     infinite: true,
     speed: 500,
     centerMode: false,
-    slidesToShow: 6,
+    slidesToShow: 5,
     slidesToScroll: 1,
 
     responsive: [
@@ -244,36 +291,43 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
     <Container>
       {title && <SliderTitle>{title}</SliderTitle>}
       <StyledSlider {...settings}>
-        {movies.map((movie) => (
+        {movies.map((movie, index) => (
           <Box
             key={movie.id}
             $bgPhoto={
               movie.backdrop_path
                 ? makeImagePath(movie.backdrop_path)
-                : "/placeholder-image.jpg"
+                : "movie.jpg"
             }
           >
+            <div className="box-image" />
+
             <Overlay>
               <div className="title">{movie.title}</div>
               <div className="age-restriction">
                 {certifications[movie.id] || "15"}
               </div>
             </Overlay>
+
+            {/* Info - 사진 아래 정보 */}
             <Info>
-              <h4>{movie.title}</h4>
               <div className="info-buttons">
                 <FontAwesomeIcon
                   icon={faPlay}
-                  onClick={() => onDetail(movie.id)}
+                  onClick={() => navigate(`/movies/${movie.id}`)}
                 />
                 <FontAwesomeIcon
                   icon={faHeart}
-                  onClick={() => toggleFavorite(movie.id)}
                   style={{
                     color: favoriteMovies.includes(movie.id)
                       ? "#067FDA"
                       : "white",
+                    outline:
+                      focusedIndex === index && isFavoriteFocused
+                        ? "2px solid #FFD700"
+                        : "none", // 좋아요 버튼 포커스 강조
                   }}
+                  onClick={() => toggleFavorite(movie.id)}
                 />
               </div>
               <div className="info-rating">

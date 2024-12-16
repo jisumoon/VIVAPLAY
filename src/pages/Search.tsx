@@ -15,8 +15,7 @@ const Container = styled.div`
   width: 100%;
   min-height: 100vh;
   background: ${(props) => props.theme.black.lighter};
-  padding: 20px;
-  padding-left: 50px;
+  padding: 30px;
   @media (max-width: 768px) {
     padding: 0;
   }
@@ -27,20 +26,24 @@ const Header = styled.div`
   margin-bottom: 60px;
   padding-left: 30px;
   color: ${(props) => props.theme.white.darker};
-
+  letter-spacing: 2px;
   @media (max-width: 768px) {
     margin: 40px;
+    padding-left: 0;
+    text-align: center;
+    letter-spacing: 2px;
   }
 
   @media (max-width: 400px) {
     margin-bottom: 30px;
-    margin-top: 100px;
+    margin-top: 40px;
+    text-align: left;
   }
   h1 {
     font-size: 28px;
 
     @media (max-width: 400px) {
-      font-size: 20px;
+      font-size: 24px;
     }
   }
 `;
@@ -49,26 +52,27 @@ const MovieGrid = styled.div`
   display: flex;
   padding-left: 30px;
   flex-wrap: wrap;
-  gap: 50px;
+  gap: 40px;
   @media (max-width: 768px) {
     gap: 20px;
   }
 
   @media (max-width: 400px) {
-    gap: 10px;
+    justify-content: space-between;
+    padding: 0 20px;
   }
 `;
 
 const MovieCard = styled.div`
-  width: 240px;
-  height: 150px;
-  background: ${(props) => props.theme.black.darker};
-  border-radius: 4px;
+  width: 250px;
+  height: 200px;
+  border-radius: 10px;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s ease;
   cursor: pointer;
+  margin-bottom: 20px;
   &:hover {
     transform: scale(1.05);
   }
@@ -101,9 +105,15 @@ const Overlay = styled.div`
   padding: 0 10px;
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
+  backdrop-filter: blur(2px);
+
+  div {
+    display: flex;
+    gap: 10px;
+  }
 
   .title {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -111,7 +121,7 @@ const Overlay = styled.div`
   }
 
   .age-restriction {
-    font-size: 12px;
+    font-size: 14px;
     padding: 2px 5px;
     color: white;
     border-radius: 4px;
@@ -214,7 +224,7 @@ const Search = () => {
     return (
       <Container>
         <Header>
-          <h1>검색어 "{keyword}"에 대한 결과가 없습니다.</h1>
+          <h1>"{keyword}"에 대한 결과가 없습니다.</h1>
         </Header>
       </Container>
     );
@@ -223,7 +233,7 @@ const Search = () => {
   return (
     <Container>
       <Header>
-        <h1>검색어 "{keyword}"에 대한 결과입니다.</h1>
+        <h1>"{keyword}"에 대한 결과입니다.</h1>
       </Header>
       <MovieGrid>
         {currentMovies.map((movie) => (

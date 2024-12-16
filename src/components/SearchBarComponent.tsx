@@ -2,21 +2,21 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { getAutocompleteResults, getPopularMovies } from "../api";
-
-// 스타일 정의
+import { getAutocompleteResults, getPopularMovies, Movie } from "../api";
+import { makeImagePath } from "../utils";
 
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  margin-bottom: 100px;
 `;
 const Search = styled.form`
   color: ${(props) => props.theme.blue.darker};
   display: flex;
-  justify-content: flex-start;
-
+  justify-content: center;
+  align-items: center;
   margin-top: 40px;
   gap: 4px;
   position: relative;
@@ -31,9 +31,8 @@ const Search = styled.form`
 const SearchBar = styled(motion.input)`
   border-radius: 20px;
   padding: 10px 20px;
-  width: 300px;
+  width: 350px;
   font-size: 14px;
-  text-align: center;
   border: none;
   &:focus {
     outline: none;
@@ -66,25 +65,79 @@ const SuggestionsList = styled.ul`
 `;
 
 const PopularMoviesList = styled.ul`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 20px;
   width: 100%;
-  margin-top: 40px;
   padding: 0 40px;
 
+  @media (max-width: 400px) {
+    padding: 20px;
+    justify-content: center;
+    align-items: center;
+  }
+
   li {
-    font-size: 16px;
-    padding: 10px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    gap: 10px;
+    background: ${(props) => props.theme.black.darker};
+    transition: background 0.3s ease;
     cursor: pointer;
-    color: #939393;
+
+    @media (max-width: 400px) {
+      width: 160px;
+      height: 250px;
+    }
 
     &:hover {
-      color: ${(props) => props.theme.blue.lighter};
+      background: ${(props) => props.theme.blue.darker};
+    }
+
+    img {
+      width: 150px;
+      height: 150px;
+      border-radius: 4px;
+      object-fit: cover;
+      margin-bottom: 10px;
+
+      @media (max-width: 400px) {
+        width: 100px;
+      }
+    }
+
+    span {
+      font-size: 16px;
+      color: ${(props) => props.theme.white.lighter};
+      width: 150px;
+      font-weight: bold;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+
+      @media (max-width: 400px) {
+        width: 100px;
+        font-size: 15px;
+        text-align: center;
+      }
     }
   }
 `;
 
 const PopularTitle = styled.p`
-  color: #fff;
-  margin-bottom: 20px;
+  margin-top: 40px;
+  font-size: 22px;
+  color: ${(props) => props.theme.white.lighter};
+  margin-bottom: 18px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-align: center;
 `;
 
 const SearchBarComponent = () => {
@@ -93,8 +146,9 @@ const SearchBarComponent = () => {
     { id: number; title?: string; name?: string }[]
   >([]);
   const [popularMovies, setPopularMovies] = useState<
-    { id: number; title: string }[]
+    { id: number; title: string; poster_path?: string; tagline: string }[]
   >([]);
+
   const navigate = useNavigate();
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -170,7 +224,7 @@ const SearchBarComponent = () => {
       <Search onSubmit={handleSearchSubmit}>
         <SearchBar
           type="text"
-          placeholder="찾으시는 검색어를 입력해주세요🔍"
+          placeholder="찾으시는 검색어를 입력해주세요"
           value={searchTerm}
           onChange={handleInputChange}
         />
@@ -184,16 +238,19 @@ const SearchBarComponent = () => {
           </SuggestionsList>
         )}
       </Search>
-
+      <PopularTitle>실시간 인기 영화</PopularTitle>
       {popularMovies.length > 0 && (
         <PopularMoviesList>
-          <PopularTitle>🎥실시간 인기 영화</PopularTitle>
-          {popularMovies.map((movie, index) => (
+          {popularMovies.map((movie) => (
             <li
               key={movie.id}
               onClick={() => handlePopularMovieClick(movie.id)}
             >
-              {index + 1}. {movie.title}
+              <img
+                src={makeImagePath(movie.poster_path || "")}
+                alt={movie.title}
+              />
+              <span>{movie.title}</span>
             </li>
           ))}
         </PopularMoviesList>

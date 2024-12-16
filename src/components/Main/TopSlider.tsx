@@ -13,7 +13,8 @@ interface Movie {
 const Container = styled.div`
   width: 100%;
   position: relative;
-  margin-top: 30px;
+  margin: 50px 0;
+  padding: 0 40px;
   @media (max-width: 768px) {
     display: none;
   }
@@ -21,7 +22,7 @@ const Container = styled.div`
 
 const Title = styled.h3`
   font-size: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   color: ${(props) => props.theme.white.lighter};
   padding-left: 20px;
 `;
@@ -133,7 +134,7 @@ const TopSlider: React.FC = () => {
 
   return (
     <Container>
-      <Title>👑 오늘 대한민국의 TOP 6 영화</Title>
+      <Title>오늘 대한민국의 TOP 6 영화</Title>
       <SliderWrapper>
         {movies.map((movie, index) => (
           <Box
