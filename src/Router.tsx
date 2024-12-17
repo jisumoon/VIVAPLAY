@@ -6,6 +6,7 @@ import Search from "./pages/Search";
 import Love from "./pages/Love";
 import Detail from "./pages/Detail";
 import MobileSearch from "./pages/MobileSearch";
+import Join from "./pages/Join";
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
       {
         path: "login",
         element: <Login />,
+      },
+      {
+        path: "join",
+        element: <Join />,
       },
       {
         path: "love",

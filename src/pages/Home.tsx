@@ -40,7 +40,7 @@ const Banner = styled.div<{ $bgPhoto: string }>`
   border-radius: 20px;
   padding: 60px;
   position: relative;
-  background: linear-gradient(to left, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8)),
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.3)),
     url(${(props) => props.$bgPhoto}) center/cover no-repeat;
   overflow: hidden;
   cursor: pointer;

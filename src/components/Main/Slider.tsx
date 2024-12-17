@@ -18,11 +18,12 @@ interface SliderProps {
 const Container = styled.div`
   position: relative;
   margin-top: 50px;
-  margin-bottom: 50px;
+  margin-bottom: 100px;
   padding: 0 40px;
 
   @media (max-width: 768px) {
     padding: 0;
+    margin-bottom: 50px;
   }
   @media (max-width: 400px) {
     padding: 0;

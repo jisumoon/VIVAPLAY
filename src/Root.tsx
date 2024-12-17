@@ -35,16 +35,6 @@ const GlobalStyle = createGlobalStyle`
     background: ${(props) => props.theme.black.lighter};
   }
 
-  .slick-slide {
-  transition: filter 0.3s ease-in-out;
-}
-
-.slick-center {
-  filter: brightness(100%);
-
-  transition: filter 0.3s ease-in-out, transform 0.3s ease-in-out;
-}
-
 `;
 
 const MobileHeaderWrapper = styled.div`
@@ -65,7 +55,8 @@ const DesktopHeaderWrapper = styled.div`
 
 const App = () => {
   const location = useLocation();
-  const hideHeader = location.pathname === "/login";
+  const hiddenRoutes = ["/login", "/join"];
+  const hideHeader = hiddenRoutes.includes(location.pathname);
 
   return (
     <>

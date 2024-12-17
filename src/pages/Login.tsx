@@ -5,7 +5,7 @@ import { ReactComponent as VivaPlayLogo } from "../vivaplay.svg";
 
 const Wrapper = styled.div`
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   background: url("/cupang.jpg") center/cover no-repeat;
   display: flex;
   flex-direction: column;
@@ -22,40 +22,32 @@ const Wrapper = styled.div`
     background-color: rgba(0, 0, 0, 0.6);
     z-index: 1;
   }
-  @media (max-width: 768px) {
-    width: 100%;
-    overflow-x: hidden;
-  }
 `;
 
 const Containe = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-content: center;
+  align-items: center;
   z-index: 2;
-  border-radius: 8px;
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(7px);
-  padding: 40px 20px;
-  @media (max-width: 768px) {
-    padding: 40px;
-  }
+  padding: 30px 100px;
+  border-radius: 8px;
 
   @media (max-width: 768px) {
-    padding: 20px;
+    padding: 40px;
   }
 `;
 
 const Form = styled.form`
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-
-  z-index: 2;
+  flex-direction: column;
+  gap: 20px;
 `;
+
 const Logo = styled.div`
   cursor: pointer;
   display: flex;
@@ -68,69 +60,51 @@ const Logo = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 32px;
-  color: #fff;
-  margin-bottom: 20px;
-
-  @media (max-width: 768px) {
-    font-size: 28px;
-  }
+  font-size: 28px;
+  color: ${(props) => props.theme.white.lighter};
+  letter-spacing: 3px;
 `;
+
+const Subtitle = styled.p`
+  font-size: 16px;
+  color: ${(props) => props.theme.white.darker};
+  text-align: center;
+  line-height: 1.7;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+`;
+
 const StyledInput = styled.input`
-  padding: 20px 200px;
-  padding-left: 20px;
+  width: 350px;
+  padding: 20px;
+  padding-left: 10px;
   background: #181a21;
   border: none;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: bold;
-  color: #fff;
-  &::placeholder {
-    font-size: 16px;
-    font-weight: 500;
-    color: #fff;
-  }
-  &:focus {
-    outline: none;
-  }
-
-  @media (max-width: 768px) {
-    padding: 20px 40px;
-  }
-`;
-
-const FindId = styled.div`
-  color: #fff;
+  border-radius: 8px;
+  color: ${(props) => props.theme.white.lighter};
   font-size: 14px;
-  display: flex;
-  justify-content: end;
-  width: 100%;
-  margin-bottom: 0;
-  cursor: pointer;
-  &:hover {
-    opacity: 0.8;
+
+  &::placeholder {
+    color: ${(props) => props.theme.white.darker};
   }
 `;
 
 const Button = styled.button`
-  width: 100%;
-  height: 60px;
-  background: ${(props) => props.theme.blue.darker};
+  width: 350px;
+  padding: 14px;
+  font-size: 16px;
   color: #fff;
+  background-color: ${(props) => (props.disabled ? "gray" : "#007bff")};
   border: none;
-  font-size: 20px;
-  line-height: 1.2;
-  border-radius: 10px;
-  transition: all 0.3s;
-  cursor: pointer;
-  &:hover {
-    background: ${(props) => props.theme.blue.lighter};
-  }
+  border-radius: 8px;
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+  transition: background-color 0.3s;
 `;
+
 const Join = styled.div`
-  margin-top: 28px;
+  margin-top: 20px;
   color: #fff;
-  font-size: 18px;
+  font-size: 16px;
   transition: all 0.3s;
   cursor: pointer;
   &:hover {
@@ -141,6 +115,7 @@ const Join = styled.div`
     font-size: 16px;
   }
 `;
+
 type LoginProps = {
   onLogin: (isAuthenticated: boolean) => void;
 };
@@ -150,13 +125,46 @@ const Login: React.FC = () => {
   const [pw, setPw] = useState<string>("");
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const hashPassword = async (password: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(hashBuffer))
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+  };
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    navigate("/"); // 메인 페이지로 이동
+
+    if (!id || !pw) {
+      alert("아이디와 비밀번호를 모두 입력해주세요.");
+      return;
+    }
+
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+    const hashedPassword = await hashPassword(pw);
+
+    // 사용자 데이터와 비교
+    const matchedUser = users.find(
+      (user: any) => user.id === id && user.password === hashedPassword
+    );
+
+    if (matchedUser) {
+      alert("비바플레이에 오신 것을 환영합니다.");
+      navigate("/"); // 메인 페이지로 이동
+    } else {
+      alert("아이디 또는 비밀번호가 일치하지 않습니다.");
+    }
   };
 
   const handleLogo = () => {
     navigate("/");
+  };
+
+  const handleJoin = () => {
+    navigate("/join");
   };
 
   return (
@@ -167,9 +175,14 @@ const Login: React.FC = () => {
         </Logo>
         <Form onSubmit={handleLogin}>
           <Title>로그인</Title>
+          <Subtitle>
+            로그인하고 당신의 세상을 열어보세요.
+            <br />
+            당신의 즐거운 순간을 더욱 빛나게 만들어 드립니다.
+          </Subtitle>
           <StyledInput
             type="text"
-            placeholder="이메일"
+            placeholder="아이디"
             value={id}
             onChange={(e) => setId(e.target.value)}
             required
@@ -183,7 +196,7 @@ const Login: React.FC = () => {
           />
 
           <Button type="submit">로그인</Button>
-          <Join>
+          <Join onClick={handleJoin}>
             VIVA 회원이 아니신가요? <b>지금 가입하세요.</b>
           </Join>
         </Form>

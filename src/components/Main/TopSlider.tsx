@@ -2,18 +2,13 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { makeImagePath } from "../../utils";
 import { useNavigate } from "react-router-dom";
-import { getPopularMovies } from "../../api";
-
-interface Movie {
-  id: number;
-  title: string;
-  backdrop_path: string | null;
-}
+import { getPopularMovies, Movie } from "../../api";
 
 const Container = styled.div`
   width: 100%;
   position: relative;
-  margin: 50px 0;
+  margin-top: 50px;
+  margin-bottom: 100px;
   padding: 0 40px;
   @media (max-width: 768px) {
     display: none;
@@ -33,7 +28,7 @@ const SliderWrapper = styled.div`
   justify-content: space-evenly;
   align-items: center;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 25px;
 
   @media (max-width: 1024px) {
     gap: 30px;

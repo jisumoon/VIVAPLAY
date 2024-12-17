@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -46,6 +46,20 @@ const NavItem = styled.div<{ isActive: boolean }>`
 const MobileHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+  // 로컬스토리지 확인
+  useEffect(() => {
+    const user = localStorage.getItem("users");
+    setIsLoggedIn(!!user);
+  }, [location.pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("users");
+    setIsLoggedIn(false);
+    alert("로그아웃 되었습니다.");
+    navigate("/");
+  };
 
   return (
     <HeaderContainer>
@@ -70,13 +84,20 @@ const MobileHeader = () => {
         <FontAwesomeIcon icon={faHeart} />
         <span>즐겨찾기</span>
       </NavItem>
-      <NavItem
-        isActive={location.pathname === "/login"}
-        onClick={() => navigate("/login")}
-      >
-        <FontAwesomeIcon icon={faUser} />
-        <span>로그인</span>
-      </NavItem>
+      {isLoggedIn ? (
+        <NavItem isActive={false} onClick={handleLogout}>
+          <FontAwesomeIcon icon={faUser} />
+          <span>로그아웃</span>
+        </NavItem>
+      ) : (
+        <NavItem
+          isActive={location.pathname === "/login"}
+          onClick={() => navigate("/login")}
+        >
+          <FontAwesomeIcon icon={faUser} />
+          <span>로그인</span>
+        </NavItem>
+      )}
     </HeaderContainer>
   );
 };

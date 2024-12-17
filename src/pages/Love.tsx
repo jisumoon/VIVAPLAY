@@ -112,7 +112,7 @@ const Overlay = styled.div`
   .age-restriction {
     font-size: 14px;
     padding: 2px 5px;
-    color: white;
+    color: #fff;
     border-radius: 4px;
     font-weight: bold;
     background: ${(props) => props.theme.blue.lighter};

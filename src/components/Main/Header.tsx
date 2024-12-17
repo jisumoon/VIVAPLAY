@@ -4,6 +4,9 @@ import { motion, useAnimation, useScroll } from "framer-motion";
 import { Link, useMatch, useNavigate, useSearchParams } from "react-router-dom";
 import { ReactComponent as VivaPlayLogo } from "../../vivaplay.svg";
 import { getAutocompleteResults } from "../../api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { useLocation } from "react-router-dom";
 
 const Nav = styled(motion.nav)<{ $isScrolled: boolean }>`
   width: 100%;
@@ -120,12 +123,7 @@ const ProfileMenu = styled.div`
   display: flex;
   align-items: center;
   gap: 15px;
-
-  img {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-  }
+  cursor: pointer;
 
   @media (max-width: 768px) {
     gap: 10px;
@@ -186,6 +184,30 @@ const SuggestionsList = styled.ul`
   }
 `;
 
+const ProfileName = styled.span`
+  font-size: 16px;
+  color: ${(props) => props.theme.blue.darker};
+  transition: color 0.3s;
+
+  &:hover {
+    color: ${(props) => props.theme.blue.lighter};
+  }
+`;
+
+const AuthLinks = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const AuthLink = styled.span`
+  font-size: 16px;
+  color: ${(props) => props.theme.blue.darker};
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 interface Form {
   keyword: string;
 }
@@ -204,6 +226,32 @@ const Header = () => {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null); // 디바운싱 타이머
   const clearSuggestionsTimeoutRef = useRef<NodeJS.Timeout | null>(null); // 10초 타이머
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [username, setUsername] = useState("");
+  const location = useLocation();
+
+  // 로컬스토리지 확인
+  useEffect(() => {
+    const storedUsers = localStorage.getItem("users");
+    if (storedUsers) {
+      const parsedUsers = JSON.parse(storedUsers);
+      if (Array.isArray(parsedUsers) && parsedUsers.length > 0) {
+        const firstUser = parsedUsers[0];
+        if (firstUser && firstUser.id) {
+          setIsLoggedIn(true);
+          setUsername(firstUser.id);
+        }
+      }
+    }
+  }, [location.pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("users");
+    setIsLoggedIn(false);
+    setUsername("");
+    alert("로그아웃 되었습니다.");
+    navigate("/");
+  };
 
   useEffect(() => {
     scrollY.on("change", () => {
@@ -365,7 +413,18 @@ const Header = () => {
           )}
         </Search>
         <ProfileMenu>
-          <img src="https://via.placeholder.com/30" alt="Profile" />
+          {isLoggedIn ? (
+            <>
+              <FontAwesomeIcon icon={faUser} />
+              <ProfileName onClick={handleLogout}>{username}님</ProfileName>
+            </>
+          ) : (
+            <AuthLinks>
+              <AuthLink onClick={() => navigate("/login")}>
+                로그인/회원가입
+              </AuthLink>
+            </AuthLinks>
+          )}
         </ProfileMenu>
       </Col>
     </Nav>
