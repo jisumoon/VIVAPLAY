@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
 import { getMovies, GetMoviesResult } from "../api";
@@ -175,6 +175,21 @@ const Home = () => {
 
   const [selectedGenre, setSelectedGenre] = useState<string | null>("28");
 
+  const sliderRef = useRef<Slider | null>(null);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    switch (e.key) {
+      case "ArrowRight":
+        sliderRef.current?.slickNext(); // 다음 슬라이드로 이동
+        break;
+      case "ArrowLeft":
+        sliderRef.current?.slickPrev(); // 이전 슬라이드로 이동
+        break;
+      default:
+        break;
+    }
+  };
+
   const filteredMovies = selectedGenre
     ? data?.results.filter((movie) =>
         movie.genre_ids.includes(parseInt(selectedGenre))
@@ -207,8 +222,12 @@ const Home = () => {
         <>
           {data?.results[0] && (
             <>
-              <div style={{ overflow: "hidden" }}>
-                <Slider {...settings}>
+              <div
+                tabIndex={0}
+                onKeyDown={handleKeyDown}
+                style={{ outline: "none" }}
+              >
+                <Slider ref={sliderRef} {...settings}>
                   {data.results.slice(0, 5).map((movie) => (
                     <div key={movie.id}>
                       <Banner
@@ -217,7 +236,13 @@ const Home = () => {
                         <Title>{movie.original_title}</Title>
                         <Overview>{movie.overview}</Overview>
                         <ButtonGroup>
-                          <BannerButton onClick={() => onDetail(movie.id)}>
+                          <BannerButton
+                            tabIndex={0}
+                            onClick={() => onDetail(movie.id)}
+                            onKeyDown={(e) =>
+                              e.key === "Enter" && onDetail(movie.id)
+                            }
+                          >
                             ▶ 더보기
                           </BannerButton>
                         </ButtonGroup>
@@ -230,11 +255,28 @@ const Home = () => {
                 <GenreSelectorTitle>
                   비바플레이에서 추천하는 프로그램은?
                 </GenreSelectorTitle>
-                <GenreSelector>
-                  <button onClick={() => setSelectedGenre("28")}>액션</button>
-                  <button onClick={() => setSelectedGenre("35")}>코미디</button>
-                  <button onClick={() => setSelectedGenre("18")}>드라마</button>
-                  <button onClick={() => setSelectedGenre("27")}>공포</button>
+                <GenreSelector
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const focusedElement =
+                        document.activeElement as HTMLElement;
+                      focusedElement.click(); // 현재 포커스된 버튼 클릭 실행
+                    }
+                  }}
+                >
+                  <button tabIndex={0} onClick={() => setSelectedGenre("28")}>
+                    액션
+                  </button>
+                  <button tabIndex={0} onClick={() => setSelectedGenre("35")}>
+                    코미디
+                  </button>
+                  <button tabIndex={0} onClick={() => setSelectedGenre("18")}>
+                    드라마
+                  </button>
+                  <button tabIndex={0} onClick={() => setSelectedGenre("27")}>
+                    공포
+                  </button>
                 </GenreSelector>
               </GenreSelectorWrapper>
             </>

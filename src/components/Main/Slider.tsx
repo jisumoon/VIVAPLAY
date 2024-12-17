@@ -21,6 +21,10 @@ const Container = styled.div`
   margin-bottom: 100px;
   padding: 0 40px;
 
+  &:focus {
+    outline: none;
+  }
+
   @media (max-width: 768px) {
     padding: 0;
     margin-bottom: 50px;
@@ -72,7 +76,7 @@ const StyledSlider = styled(Slider)`
   }
 `;
 
-const Box = styled.div<{ $bgPhoto: string }>`
+const Box = styled.div<{ $bgPhoto: string; $isFocused: boolean }>`
   position: relative;
   display: flex;
   flex-direction: column;
@@ -82,10 +86,11 @@ const Box = styled.div<{ $bgPhoto: string }>`
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-radius: 8px;
   overflow: hidden;
+  border: ${(props) => (props.$isFocused ? "4px solid #FFD700" : "none")};
 
   &:hover {
     transform: scale(1.05);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); /* 그림자 효과 */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
   }
 
   .box-image {
@@ -135,7 +140,7 @@ const Info = styled.div`
   left: 0;
   width: 100%;
   padding: 15px;
-  background: rgba(0, 0, 0, 0.85); /* 어두운 배경 */
+  background: rgba(0, 0, 0, 0.85);
   color: ${(props) => props.theme.white.lighter};
   border-radius: 0 0 8px 8px;
   text-align: left;
@@ -190,6 +195,7 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
   const sliderRef = useRef<Slider | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(0); // 포커스된 슬라이드 인덱스
   const [isFavoriteFocused, setIsFavoriteFocused] = useState<boolean>(false); // 좋아요 버튼 포커스 상태
+  const [isSliderFocused, setIsSliderFocused] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchCertifications = async () => {
@@ -211,43 +217,40 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
   }, [movies]);
 
   // TV 리모컨 키 입력 처리
+  // 키 이벤트 처리
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isSliderFocused) return; // 해당 슬라이더에만 키 이벤트 활성화
+
       switch (event.key) {
-        case "ArrowRight": // 오른쪽 키: 다음 슬라이드로 이동
-          setIsFavoriteFocused(false); // 좋아요 버튼에서 포커스 해제
+        case "ArrowRight":
+          setIsFavoriteFocused(false);
           setFocusedIndex((prev) => Math.min(prev + 1, movies.length - 1));
           sliderRef.current?.slickNext();
           break;
-        case "ArrowLeft": // 왼쪽 키: 이전 슬라이드로 이동
-          setIsFavoriteFocused(false); // 좋아요 버튼에서 포커스 해제
+
+        case "ArrowLeft":
+          setIsFavoriteFocused(false);
           setFocusedIndex((prev) => Math.max(prev - 1, 0));
           sliderRef.current?.slickPrev();
           break;
-        case "ArrowUp": // 위쪽 키: 좋아요 버튼 포커스
-          setIsFavoriteFocused(true);
-          break;
-        case "ArrowDown": // 아래쪽 키: 슬라이드 포커스
-          setIsFavoriteFocused(false);
-          break;
-        case "Enter": // 엔터 키: 현재 포커스된 요소 클릭
+
+        case "Enter":
           if (isFavoriteFocused) {
-            toggleFavorite(movies[focusedIndex].id); // 좋아요 버튼 클릭
+            console.log("좋아요 클릭");
           } else {
-            navigate(`/movies/${movies[focusedIndex].id}`); // 슬라이드 상세 보기
+            navigate(`/movies/${movies[focusedIndex].id}`);
           }
           break;
+
         default:
           break;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [focusedIndex, isFavoriteFocused, movies, navigate]);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [focusedIndex, isFavoriteFocused, isSliderFocused, movies, navigate]);
 
   const settings = {
     dots: false,
@@ -289,12 +292,17 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
   }
 
   return (
-    <Container>
+    <Container
+      tabIndex={0}
+      onFocus={() => setIsSliderFocused(true)} // 포커스 받았을 때 활성화
+      onBlur={() => setIsSliderFocused(false)} // 포커스 해제 시 비활성화
+    >
       {title && <SliderTitle>{title}</SliderTitle>}
       <StyledSlider {...settings}>
         {movies.map((movie, index) => (
           <Box
             key={movie.id}
+            $isFocused={index === focusedIndex}
             $bgPhoto={
               movie.backdrop_path
                 ? makeImagePath(movie.backdrop_path)
@@ -310,7 +318,6 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
               </div>
             </Overlay>
 
-            {/* Info - 사진 아래 정보 */}
             <Info>
               <div className="info-buttons">
                 <FontAwesomeIcon

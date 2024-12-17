@@ -229,6 +229,52 @@ const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [username, setUsername] = useState("");
   const location = useLocation();
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1); // 추천 항목 포커스
+  const inputRef = useRef<HTMLInputElement | null>(null); // 검색 바 포커스 관리
+
+  // 키보드 이벤트 핸들러
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!searchOpen) {
+      // 검색바 열기 (Enter 키로 검색바 포커스 설정)
+      if (e.key === "Enter") {
+        openSearch();
+      }
+      return;
+    }
+
+    // 검색바가 열려 있을 때만 처리
+    switch (e.key) {
+      case "ArrowDown":
+        setHighlightedIndex((prev) =>
+          prev < suggestions.length - 1 ? prev + 1 : 0
+        );
+        break;
+
+      case "ArrowUp":
+        setHighlightedIndex((prev) =>
+          prev > 0 ? prev - 1 : suggestions.length - 1
+        );
+        break;
+
+      case "Enter":
+        if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
+          navigate(`/movies/${suggestions[highlightedIndex].id}`);
+          setSearchTerm("");
+          setSuggestions([]);
+          setSearchOpen(false);
+        }
+        break;
+
+      case "Escape":
+        setSearchOpen(false);
+        setSuggestions([]);
+        break;
+
+      default:
+        break;
+    }
+  };
 
   // 로컬스토리지 확인
   useEffect(() => {
@@ -386,6 +432,12 @@ const Header = () => {
       <Col>
         <Search onSubmit={handleSearchSubmit}>
           <motion.svg
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                openSearch();
+              }
+            }}
             onClick={openSearch}
             animate={{ x: searchOpen ? -194 : 0 }}
             transition={{ type: "linear" }}
@@ -401,11 +453,22 @@ const Header = () => {
             initial={{ scaleX: 0 }}
             value={searchTerm}
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
           />
+
           {searchTerm && suggestions.length > 0 && (
             <SuggestionsList>
-              {suggestions.map((item) => (
-                <li key={item.id} onClick={() => handleSuggestionClick(item)}>
+              {suggestions.map((item, index) => (
+                <li
+                  key={item.id}
+                  onClick={() => handleSuggestionClick(item)} // 마우스 클릭 이벤트
+                  onMouseEnter={() => setHighlightedIndex(index)} // 마우스 호버 시 포커스
+                  style={{
+                    backgroundColor:
+                      highlightedIndex === index ? "#067FDA" : "transparent", // 선택된 항목의 배경색
+                    color: highlightedIndex === index ? "#fff" : "#ccc", // 선택된 항목의 글자색
+                  }}
+                >
                   {item.title || item.name || "Unknown"}
                 </li>
               ))}

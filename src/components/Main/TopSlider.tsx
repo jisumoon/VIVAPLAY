@@ -10,6 +10,9 @@ const Container = styled.div`
   margin-top: 50px;
   margin-bottom: 100px;
   padding: 0 40px;
+  &:focus {
+    outline: none;
+  }
   @media (max-width: 768px) {
     display: none;
   }
@@ -35,12 +38,13 @@ const SliderWrapper = styled.div`
   }
 `;
 
-const Box = styled.div<{ $bgPhoto: string }>`
+const Box = styled.div<{ $bgPhoto: string; $isFocused: boolean }>`
   position: relative;
   width: 200px;
   height: 300px;
   background: url(${(props) => props.$bgPhoto}) center/cover no-repeat;
   border-radius: 8px;
+  border: ${(props) => (props.$isFocused ? "4px solid #FFD700" : "none")};
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
   cursor: pointer;
   transition: transform 0.3s ease-in-out;
@@ -107,7 +111,37 @@ const Overlay = styled.div`
 
 const TopSlider: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [focusedIndex, setFocusedIndex] = useState<number>(0);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
   const navigate = useNavigate();
+
+  // TV 리모컨 키 입력 처리
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case "ArrowRight": // 오른쪽 키: 다음 사진으로 이동
+          setFocusedIndex((prev) => Math.min(prev + 1, movies.length - 1));
+          break;
+
+        case "ArrowLeft": // 왼쪽 키: 이전 사진으로 이동
+          setFocusedIndex((prev) => Math.max(prev - 1, 0));
+          break;
+
+        case "Enter": // 엔터 키: 현재 포커스된 사진의 상세 페이지로 이동
+          navigate(`/movies/${movies[focusedIndex].id}`);
+          break;
+
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [focusedIndex, movies, navigate]);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -128,13 +162,18 @@ const TopSlider: React.FC = () => {
   };
 
   return (
-    <Container>
+    <Container
+      tabIndex={0}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+    >
       <Title>오늘 대한민국의 TOP 6 영화</Title>
       <SliderWrapper>
         {movies.map((movie, index) => (
           <Box
             onClick={() => onDetail(movie.id)}
             key={movie.id}
+            $isFocused={index === focusedIndex}
             $bgPhoto={makeImagePath(movie.backdrop_path || "")}
           >
             <Rank>{index + 1}</Rank>
