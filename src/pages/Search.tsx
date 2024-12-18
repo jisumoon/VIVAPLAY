@@ -170,8 +170,9 @@ const Search = () => {
   const [certifications, setCertifications] = useState<Record<number, string>>(
     {}
   );
-
   const moviesPerPage = 20;
+  const [focusedIndex, setFocusedIndex] = useState(0); // 리모컨 포커스 인덱스
+  const [isFocused, setIsFocused] = useState(false); // 포커스 상태
 
   const { data: movieData, isLoading: movieLoading } =
     useQuery<GetMoviesResult>({
@@ -179,10 +180,12 @@ const Search = () => {
       queryFn: () => searchContents(keyword),
     });
 
+  //현재 보여줄 페이지 제한
   const currentMovies = (movieData?.results || [])
     .filter((movie) => movie?.id) // id가 있는 영화만 포함
     .slice((currentPage - 1) * moviesPerPage, currentPage * moviesPerPage);
 
+  //등급
   useEffect(() => {
     const fetchCertifications = async () => {
       const results: Record<number, string> = {};
@@ -203,6 +206,32 @@ const Search = () => {
       fetchCertifications();
     }
   }, [currentMovies]);
+
+  //리모컨컨
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isFocused) return; // 포커스가 없으면 리모컨 동작 무시
+
+      switch (event.key) {
+        case "ArrowRight":
+          setFocusedIndex((prev) =>
+            Math.min(prev + 1, currentMovies.length - 1)
+          );
+          break;
+        case "ArrowLeft":
+          setFocusedIndex((prev) => Math.max(prev - 1, 0));
+          break;
+        case "Enter":
+          navigate(`/movies/${currentMovies[focusedIndex].id}`);
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFocused, focusedIndex, currentMovies, navigate]);
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
@@ -239,7 +268,11 @@ const Search = () => {
         {currentMovies.map((movie) => (
           <MovieCard key={movie.id} onClick={() => onDetail(movie.id)}>
             <MoviePoster
-              src={makeImagePath(movie.poster_path || "")}
+              src={
+                movie.backdrop_path
+                  ? makeImagePath(movie.backdrop_path)
+                  : "movie.jpg"
+              }
               alt={movie.title}
             />
             <Overlay>

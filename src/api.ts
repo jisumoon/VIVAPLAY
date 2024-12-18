@@ -13,6 +13,7 @@ export interface Movie {
   vote_count: number;
   release_date: string;
   adult: boolean;
+  certification?: string;
 }
 
 export interface GetMoviesResult {
@@ -123,13 +124,6 @@ export const getVideos = (movieId: number) => {
   );
 };
 
-//영화 연령 등급
-export const getCertification = (movieId: number) => {
-  return fetch(
-    `${BASE_PATH}/movie/${movieId}/release_dates?api_key=${API_KEY}`
-  ).then((response) => response.json());
-};
-
 //영화 출연진
 export const getCredits = (movieId: number) => {
   return fetch(`${BASE_PATH}/movie/${movieId}/credits?api_key=${API_KEY}`).then(
@@ -137,7 +131,7 @@ export const getCredits = (movieId: number) => {
   );
 };
 
-// 특정 장르의 영화 목록
+//특정 장르의 영화 목록
 export const searchMoviesByGenre = (genreId: number) => {
   return fetch(
     `${BASE_PATH}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}`
@@ -168,4 +162,27 @@ export const getPopularMovies = () => {
   return fetch(`${BASE_PATH}/movie/popular?api_key=${API_KEY}`)
     .then((response) => response.json())
     .then((data) => data.results || []);
+};
+
+// 여러 영화의 연령 등급을 한 번에 가져오기
+export const getCertificationsForMovies = async (movieIds: number[]) => {
+  const certificationPromises = movieIds.map(async (id) => {
+    const certification = await getCertification(id);
+    return { id, certification };
+  });
+
+  const results = await Promise.all(certificationPromises);
+
+  // 영화 ID를 키로, 연령 등급을 값으로 하는 객체 반환
+  return results.reduce(
+    (acc, { id, certification }) => ({ ...acc, [id]: certification }),
+    {} as Record<number, string>
+  );
+};
+
+//영화 연령 등급
+export const getCertification = (movieId: number) => {
+  return fetch(
+    `${BASE_PATH}/movie/${movieId}/release_dates?api_key=${API_KEY}`
+  ).then((response) => response.json());
 };

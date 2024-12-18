@@ -165,6 +165,13 @@ const slideTitles = [
   "어워드 수상 콘텐츠",
 ];
 
+// 리모컨 이벤트 키 설정
+const REMOTE_KEYS = {
+  LEFT: "ArrowLeft",
+  RIGHT: "ArrowRight",
+  ENTER: "Enter",
+};
+
 const Home = () => {
   const { data, isLoading } = useQuery<GetMoviesResult>({
     queryKey: ["nowPlaying"],
@@ -179,11 +186,11 @@ const Home = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
-      case "ArrowRight":
-        sliderRef.current?.slickNext(); // 다음 슬라이드로 이동
+      case REMOTE_KEYS.RIGHT:
+        sliderRef.current?.slickNext();
         break;
-      case "ArrowLeft":
-        sliderRef.current?.slickPrev(); // 이전 슬라이드로 이동
+      case REMOTE_KEYS.LEFT:
+        sliderRef.current?.slickPrev();
         break;
       default:
         break;
@@ -195,6 +202,13 @@ const Home = () => {
         movie.genre_ids.includes(parseInt(selectedGenre))
       )
     : null;
+
+  const genres = [
+    { id: "28", label: "액션" },
+    { id: "35", label: "코미디" },
+    { id: "18", label: "드라마" },
+    { id: "27", label: "공포" },
+  ];
 
   // 상세 페이지 이동
   const onDetail = (movieId: number) => {
@@ -231,7 +245,11 @@ const Home = () => {
                   {data.results.slice(0, 5).map((movie) => (
                     <div key={movie.id}>
                       <Banner
-                        $bgPhoto={makeImagePath(movie.backdrop_path || "")}
+                        $bgPhoto={
+                          movie.backdrop_path
+                            ? makeImagePath(movie.backdrop_path)
+                            : "movie.jpg"
+                        }
                       >
                         <Title>{movie.original_title}</Title>
                         <Overview>{movie.overview}</Overview>
@@ -255,29 +273,18 @@ const Home = () => {
                 <GenreSelectorTitle>
                   비바플레이에서 추천하는 프로그램은?
                 </GenreSelectorTitle>
-                <GenreSelector
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      const focusedElement =
-                        document.activeElement as HTMLElement;
-                      focusedElement.click(); // 현재 포커스된 버튼 클릭 실행
-                    }
-                  }}
-                >
-                  <button tabIndex={0} onClick={() => setSelectedGenre("28")}>
-                    액션
-                  </button>
-                  <button tabIndex={0} onClick={() => setSelectedGenre("35")}>
-                    코미디
-                  </button>
-                  <button tabIndex={0} onClick={() => setSelectedGenre("18")}>
-                    드라마
-                  </button>
-                  <button tabIndex={0} onClick={() => setSelectedGenre("27")}>
-                    공포
-                  </button>
+                <GenreSelector tabIndex={0}>
+                  {genres.map((genre) => (
+                    <button
+                      key={genre.id}
+                      tabIndex={0}
+                      onClick={() => setSelectedGenre(genre.id)}
+                    >
+                      {genre.label}
+                    </button>
+                  ))}
                 </GenreSelector>
+                ;
               </GenreSelectorWrapper>
             </>
           )}

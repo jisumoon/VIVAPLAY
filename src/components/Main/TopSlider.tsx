@@ -38,13 +38,18 @@ const SliderWrapper = styled.div`
   }
 `;
 
-const Box = styled.div<{ $bgPhoto: string; $isFocused: boolean }>`
+const Box = styled.div<{
+  $bgPhoto: string;
+  $isFocused: boolean;
+  $isUsingRemote: boolean;
+}>`
   position: relative;
   width: 200px;
   height: 300px;
   background: url(${(props) => props.$bgPhoto}) center/cover no-repeat;
   border-radius: 8px;
-  border: ${(props) => (props.$isFocused ? "4px solid #FFD700" : "none")};
+  border: ${(props) =>
+    props.$isUsingRemote && props.$isFocused ? "4px solid #FFD700" : "none"};
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
   cursor: pointer;
   transition: transform 0.3s ease-in-out;
@@ -114,20 +119,23 @@ const TopSlider: React.FC = () => {
   const [focusedIndex, setFocusedIndex] = useState<number>(0);
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const navigate = useNavigate();
+  const [isUsingRemote, setIsUsingRemote] = useState<boolean>(false);
 
-  // TV 리모컨 키 입력 처리
+  // 리모컨 핸들러
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isFocused) return; // 슬라이더에 포커스가 있을 때만 동작
+
       switch (event.key) {
-        case "ArrowRight": // 오른쪽 키: 다음 사진으로 이동
+        case "ArrowRight":
           setFocusedIndex((prev) => Math.min(prev + 1, movies.length - 1));
           break;
 
-        case "ArrowLeft": // 왼쪽 키: 이전 사진으로 이동
+        case "ArrowLeft":
           setFocusedIndex((prev) => Math.max(prev - 1, 0));
           break;
 
-        case "Enter": // 엔터 키: 현재 포커스된 사진의 상세 페이지로 이동
+        case "Enter":
           navigate(`/movies/${movies[focusedIndex].id}`);
           break;
 
@@ -137,12 +145,12 @@ const TopSlider: React.FC = () => {
     };
 
     window.addEventListener("keydown", handleKeyDown);
-
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [focusedIndex, movies, navigate]);
+  }, [isFocused, movies, focusedIndex, navigate]);
 
+  //영화데이터
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -165,16 +173,24 @@ const TopSlider: React.FC = () => {
     <Container
       tabIndex={0}
       onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
+      onBlur={() => {
+        setIsFocused(false);
+        setFocusedIndex(0);
+      }}
     >
       <Title>오늘 대한민국의 TOP 6 영화</Title>
       <SliderWrapper>
         {movies.map((movie, index) => (
           <Box
             onClick={() => onDetail(movie.id)}
+            tabIndex={0}
             key={movie.id}
             $isFocused={index === focusedIndex}
+            $isUsingRemote={isUsingRemote}
             $bgPhoto={makeImagePath(movie.backdrop_path || "")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") onDetail(movie.id);
+            }}
           >
             <Rank>{index + 1}</Rank>
             <Overlay>

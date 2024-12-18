@@ -170,6 +170,41 @@ const Love = () => {
   );
   const [currentPage, setCurrentPage] = useState(1);
   const moviesPerPage = 20;
+  const [focusedIndex, setFocusedIndex] = useState<number>(0); // 현재 포커스 영화화
+  const [isFocused, setIsFocused] = useState<boolean>(false); // 리모컨 사용
+
+  //리모컨
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isFocused) return;
+
+      switch (event.key) {
+        case "ArrowRight": // 오른쪽 키
+          setFocusedIndex((prev) =>
+            Math.min(prev + 1, favoriteMovies.length - 1)
+          );
+          break;
+        case "ArrowLeft": // 왼쪽 키
+          setFocusedIndex((prev) => Math.max(prev - 1, 0));
+          break;
+        case "Enter": // 엔터 키
+          if (favoriteMovies[focusedIndex]) {
+            navigate(`/movies/${favoriteMovies[focusedIndex].id}`);
+          }
+          break;
+        case "Backspace":
+          navigate(-1); // 이전 페이지로 이동
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isFocused, focusedIndex, favoriteMovies, navigate]);
 
   //즐겨찾기 데이터
   useEffect(() => {
@@ -188,7 +223,7 @@ const Love = () => {
     fetchFavoriteMovies();
   }, []);
 
-  //인증데이터
+  //등급 데이터
   useEffect(() => {
     const fetchCertifications = async () => {
       const results: Record<number, string> = {};
@@ -208,10 +243,12 @@ const Love = () => {
     fetchCertifications();
   }, [favoriteMovies]);
 
+  //상세페이지지
   const handleMovieClick = (movieId: number) => {
     navigate(`/movies/${movieId}`);
   };
 
+  //토글
   const toggleFavorite = (movieId: number) => {
     setFavoriteMovies((prevFavorites) => {
       const updatedFavorites = prevFavorites.filter(
@@ -225,12 +262,17 @@ const Love = () => {
     });
   };
 
+  //페이지네이션
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
   };
 
   return (
-    <Container>
+    <Container
+      tabIndex={0}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+    >
       <Title>내가 즐겨찾는 영화</Title>
       <div>
         {favoriteMovies.length > 0 ? (
@@ -241,7 +283,7 @@ const Love = () => {
                   $bgPhoto={
                     movie.backdrop_path
                       ? makeImagePath(movie.backdrop_path)
-                      : "/placeholder-image.jpg"
+                      : "movie.jpg"
                   }
                   onClick={() => handleMovieClick(movie.id)}
                 />

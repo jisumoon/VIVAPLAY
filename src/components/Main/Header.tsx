@@ -215,49 +215,51 @@ interface Form {
 const Header = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const homeMatch = useMatch("/");
-  const tvMatch = useMatch("/tv");
   const LoveMatch = useMatch("/love");
   const inputAnimation = useAnimation();
-  const { scrollY } = useScroll();
+  const { scrollY } = useScroll(); //스크롤 위치
   const navigate = useNavigate();
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false); // 사용자 스크롤 여부
   const [searchTerm, setSearchTerm] = useState(""); // 검색어 상태
   const [suggestions, setSuggestions] = useState<any[]>([]); // 자동 완성 결과
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null); // 디바운싱 타이머
   const clearSuggestionsTimeoutRef = useRef<NodeJS.Timeout | null>(null); // 10초 타이머
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [username, setUsername] = useState("");
-  const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); //로그인 여부
+  const [username, setUsername] = useState(""); // 로그인 사용자
+  const location = useLocation(); // 경로 추적적
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1); // 추천 항목 포커스
   const inputRef = useRef<HTMLInputElement | null>(null); // 검색 바 포커스 관리
 
-  // 키보드 이벤트 핸들러
+  // 메인 이동
+  const goToMain = () => {
+    navigate("/");
+  };
 
+  // 키보드 이벤트 핸들러
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!searchOpen) {
-      // 검색바 열기 (Enter 키로 검색바 포커스 설정)
-      if (e.key === "Enter") {
-        openSearch();
-      }
+    if (!searchOpen && e.key === "Enter") {
+      // 검색창이 닫혀 있을 때 Enter 키로 검색창 열기
+      openSearch();
       return;
     }
 
-    // 검색바가 열려 있을 때만 처리
+    // 검색창이 열려 있을 때 키보드 이벤트 처리
     switch (e.key) {
       case "ArrowDown":
+        // 아래 화살표로 추천 항목 순환
         setHighlightedIndex((prev) =>
           prev < suggestions.length - 1 ? prev + 1 : 0
         );
         break;
-
       case "ArrowUp":
+        // 위 화살표로 추천 항목 순환
         setHighlightedIndex((prev) =>
           prev > 0 ? prev - 1 : suggestions.length - 1
         );
         break;
-
       case "Enter":
+        // Enter 키로 선택된 추천 항목 이동
         if (highlightedIndex >= 0 && suggestions[highlightedIndex]) {
           navigate(`/movies/${suggestions[highlightedIndex].id}`);
           setSearchTerm("");
@@ -265,12 +267,11 @@ const Header = () => {
           setSearchOpen(false);
         }
         break;
-
       case "Escape":
+        // Esc 키로 검색창 닫기
         setSearchOpen(false);
         setSuggestions([]);
         break;
-
       default:
         break;
     }
@@ -278,19 +279,32 @@ const Header = () => {
 
   // 로컬스토리지 확인
   useEffect(() => {
-    const storedUsers = localStorage.getItem("users");
-    if (storedUsers) {
-      const parsedUsers = JSON.parse(storedUsers);
-      if (Array.isArray(parsedUsers) && parsedUsers.length > 0) {
-        const firstUser = parsedUsers[0];
-        if (firstUser && firstUser.id) {
+    const handleStorageChange = () => {
+      const storedUsers = localStorage.getItem("users");
+      if (storedUsers) {
+        const parsedUsers = JSON.parse(storedUsers);
+        if (Array.isArray(parsedUsers) && parsedUsers.length > 0) {
           setIsLoggedIn(true);
-          setUsername(firstUser.id);
+          setUsername(parsedUsers[0].id);
         }
+      } else {
+        setIsLoggedIn(false);
+        setUsername("");
       }
-    }
-  }, [location.pathname]);
+    };
 
+    // storage 이벤트 리스너 등록
+    window.addEventListener("storage", handleStorageChange);
+
+    // 초기 로드 시 상태 확인
+    handleStorageChange();
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  //로그아웃
   const handleLogout = () => {
     localStorage.removeItem("users");
     setIsLoggedIn(false);
@@ -299,12 +313,14 @@ const Header = () => {
     navigate("/");
   };
 
+  //스크롤 위치에 따라 헤더 변경
   useEffect(() => {
     scrollY.on("change", () => {
       setIsScrolled(scrollY.get() > 60);
     });
   }, [scrollY]);
 
+  // 검색창 열기/ 닫기
   const openSearch = () => {
     if (searchOpen) {
       inputAnimation.start({ scaleX: 0 });
@@ -319,10 +335,7 @@ const Header = () => {
     }
   };
 
-  const goToMain = () => {
-    navigate("/");
-  };
-
+  //검색어 입력 유효 처리
   const onValid = (data: { keyword: string }) => {
     const trimmedKeyword = data.keyword.trim();
     if (trimmedKeyword) {
@@ -337,7 +350,7 @@ const Header = () => {
     }
   };
 
-  // 검색어가 변경될 때 자동 완성 데이터s
+  // 검색어가 변경될 때 자동 완성 데이터
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (!searchTerm.trim()) {
@@ -366,6 +379,7 @@ const Header = () => {
     };
   }, [searchTerm]);
 
+  // 검색 입력값 변경경
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -393,6 +407,7 @@ const Header = () => {
     }
   };
 
+  //검색창 제출
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchTerm.trim()) {

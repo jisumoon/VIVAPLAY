@@ -7,12 +7,12 @@ import { faHeart, faPlay } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { getCertification, Movie } from "../../api";
+import { getCertificationsForMovies, Movie } from "../../api";
 
 interface SliderProps {
-  movies: Movie[];
-  title?: string;
-  onClick?: (movieId: number) => void;
+  movies: Movie[]; // 영화데이터 배열
+  title?: string; // 슬라이더 제목
+  onClick?: (movieId: number) => void; //클릭핸들러
 }
 
 const Container = styled.div`
@@ -76,7 +76,11 @@ const StyledSlider = styled(Slider)`
   }
 `;
 
-const Box = styled.div<{ $bgPhoto: string; $isFocused: boolean }>`
+const Box = styled.div<{
+  $bgPhoto: string;
+  $isFocused: boolean;
+  $isUsingRemote: boolean;
+}>`
   position: relative;
   display: flex;
   flex-direction: column;
@@ -86,8 +90,8 @@ const Box = styled.div<{ $bgPhoto: string; $isFocused: boolean }>`
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-radius: 8px;
   overflow: hidden;
-  border: ${(props) => (props.$isFocused ? "4px solid #FFD700" : "none")};
-
+  border: ${(props) =>
+    props.$isFocused && props.$isUsingRemote ? "4px solid #FFD700" : "none"};
   &:hover {
     transform: scale(1.05);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
@@ -184,43 +188,48 @@ const Info = styled.div`
 `;
 
 const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); //페이지 이동동
   const [favoriteMovies, setFavoriteMovies] = useState<number[]>(() => {
     const savedFavorites = localStorage.getItem("favoriteMovies");
     return savedFavorites ? JSON.parse(savedFavorites) : [];
   });
   const [certifications, setCertifications] = useState<Record<number, string>>(
     {}
-  );
+  ); // 영화별 등급 상태
   const sliderRef = useRef<Slider | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(0); // 포커스된 슬라이드 인덱스
   const [isFavoriteFocused, setIsFavoriteFocused] = useState<boolean>(false); // 좋아요 버튼 포커스 상태
-  const [isSliderFocused, setIsSliderFocused] = useState<boolean>(false);
+  const [isSliderFocused, setIsSliderFocused] = useState<boolean>(false); //슬라이드 활성화
+  const isUsingRemote = useRef(false); // 리모컨 사용 여부 감지
+  const [moviesWithCertifications, setMoviesWithCertifications] =
+    useState<Movie[]>(movies); //로컬상태
+
+  // 영화 등급 가져오기
+  const fetchMoviesWithCertifications = async (
+    movies: Movie[]
+  ): Promise<Movie[]> => {
+    const movieIds = movies.map((movie) => movie.id);
+    const certificationsMap = await getCertificationsForMovies(movieIds);
+
+    return movies.map((movie) => ({
+      ...movie,
+      certification: certificationsMap[movie.id] || "15",
+    }));
+  };
 
   useEffect(() => {
-    const fetchCertifications = async () => {
-      const results: Record<number, string> = {};
-      for (const movie of movies) {
-        const data = await getCertification(movie.id);
-        const krRelease = data.results.find(
-          (release: any) => release.iso_3166_1 === "KR"
-        );
-        results[movie.id] =
-          krRelease && krRelease.release_dates.length > 0
-            ? krRelease.release_dates[0].certification || "15"
-            : "15";
-      }
-      setCertifications(results);
+    const fetchMovies = async () => {
+      const updatedMovies = await fetchMoviesWithCertifications(movies);
+      setMoviesWithCertifications(updatedMovies);
     };
 
-    fetchCertifications();
+    fetchMovies();
   }, [movies]);
 
-  // TV 리모컨 키 입력 처리
-  // 키 이벤트 처리
+  //리모컨 핸들러
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isSliderFocused) return; // 해당 슬라이더에만 키 이벤트 활성화
+      if (!isSliderFocused) return;
 
       switch (event.key) {
         case "ArrowRight":
@@ -228,30 +237,29 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
           setFocusedIndex((prev) => Math.min(prev + 1, movies.length - 1));
           sliderRef.current?.slickNext();
           break;
-
         case "ArrowLeft":
           setIsFavoriteFocused(false);
           setFocusedIndex((prev) => Math.max(prev - 1, 0));
           sliderRef.current?.slickPrev();
           break;
-
         case "Enter":
-          if (isFavoriteFocused) {
-            console.log("좋아요 클릭");
-          } else {
-            navigate(`/movies/${movies[focusedIndex].id}`);
-          }
+          navigate(`/movies/${movies[focusedIndex].id}`);
           break;
-
         default:
           break;
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    // 포커스 상태에서만 이벤트 추가
+    if (isSliderFocused) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [focusedIndex, isFavoriteFocused, isSliderFocused, movies, navigate]);
 
+  //슬라이드 설정
   const settings = {
     dots: false,
     infinite: true,
@@ -266,25 +274,27 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
     ],
   };
 
+  //상세페이지
   const onDetail = (movieId: number) => {
     navigate(`/movies/${movieId}`);
   };
 
+  // 즐겨찾기 추가/삭제
   const toggleFavorite = (movieId: number) => {
-    // 로컬스토리지에서 현재 즐겨찾기 데이터 가져오기
-    const savedFavorites = localStorage.getItem("favoriteMovies");
-    const movieIds = savedFavorites ? JSON.parse(savedFavorites) : [];
+    setFavoriteMovies((prev) => {
+      const updatedFavorites = prev.includes(movieId)
+        ? prev.filter((id) => id !== movieId)
+        : [...prev, movieId];
 
-    // 상태와 로컬스토리지 업데이트
-    const updatedFavorites = movieIds.includes(movieId)
-      ? movieIds.filter((id: number) => id !== movieId) // 이미 있으면 삭제
-      : [...movieIds, movieId]; // 없으면 추가
+      setTimeout(() => {
+        localStorage.setItem(
+          "favoriteMovies",
+          JSON.stringify(updatedFavorites)
+        );
+      }, 0);
 
-    // 로컬스토리지에 새 값 저장
-    localStorage.setItem("favoriteMovies", JSON.stringify(updatedFavorites));
-
-    // 상태 업데이트
-    setFavoriteMovies(updatedFavorites);
+      return updatedFavorites;
+    });
   };
 
   if (!movies || movies.length === 0) {
@@ -303,6 +313,7 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
           <Box
             key={movie.id}
             $isFocused={index === focusedIndex}
+            $isUsingRemote={isUsingRemote.current} // 리모컨 사용 여부 전달
             $bgPhoto={
               movie.backdrop_path
                 ? makeImagePath(movie.backdrop_path)
@@ -314,7 +325,7 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
             <Overlay>
               <div className="title">{movie.title}</div>
               <div className="age-restriction">
-                {certifications[movie.id] || "15"}
+                {movie.certification || "15"}
               </div>
             </Overlay>
 
@@ -326,15 +337,6 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
                 />
                 <FontAwesomeIcon
                   icon={faHeart}
-                  style={{
-                    color: favoriteMovies.includes(movie.id)
-                      ? "#067FDA"
-                      : "white",
-                    outline:
-                      focusedIndex === index && isFavoriteFocused
-                        ? "2px solid #FFD700"
-                        : "none", // 좋아요 버튼 포커스 강조
-                  }}
                   onClick={() => toggleFavorite(movie.id)}
                 />
               </div>
