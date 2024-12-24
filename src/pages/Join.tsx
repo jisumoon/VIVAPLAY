@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ReactComponent as VivaPlayLogo } from "../vivaplay.svg";
+import { Helmet } from "react-helmet";
 
 const Wrapper = styled.div`
   width: 100%;
@@ -177,50 +178,64 @@ const Join: React.FC = () => {
     !passwordError;
 
   return (
-    <Wrapper>
-      <Containe>
-        <Logo onClick={() => navigate("/")}>
-          <VivaPlayLogo />
-        </Logo>
-        <Form onSubmit={handleSubmit}>
-          <Title>회원가입</Title>
-          <Subtitle>
-            비바플레이와 함께 새로운 경험을 시작하세요.
-            <br />
-            당신의 즐거운 순간을 더욱 빛나게 만들어 드립니다.
-          </Subtitle>
-          <StyledInput
-            type="text"
-            placeholder="아이디 (영어 6자리 이상)"
-            value={id}
-            onChange={(e) => {
-              setId(e.target.value.trim());
-              validateId(e.target.value.trim());
-            }}
-          />
-          {idError && <ErrorMessage>{idError}</ErrorMessage>}
-          <StyledInput
-            type="password"
-            placeholder="비밀번호 (8자리 이상)"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value.trim());
-              validatePassword(e.target.value.trim());
-            }}
-          />
-          <StyledInput
-            type="password"
-            placeholder="비밀번호 확인"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value.trim())}
-          />
-          {passwordError && <ErrorMessage>{passwordError}</ErrorMessage>}
-          <Button type="submit" disabled={!isFormValid}>
-            가입하기
-          </Button>
-        </Form>
-      </Containe>
-    </Wrapper>
+    <>
+      <Helmet>
+        <title>ViVaPlay</title>
+        <meta property="og:title" content="영화의 즐거움을 담아, VIVA Play" />
+        <meta
+          property="og:description"
+          content="즐거움이 가득한 VIVA Play에 가입하여여 다양한 영화를 만나보세요"
+        />
+        <meta
+          property="og:image"
+          content={`${process.env.PUBLIC_URL}/vivamain.png`}
+        />
+      </Helmet>
+      <Wrapper>
+        <Containe>
+          <Logo onClick={() => navigate("/")}>
+            <VivaPlayLogo />
+          </Logo>
+          <Form onSubmit={handleSubmit}>
+            <Title>회원가입</Title>
+            <Subtitle>
+              비바플레이와 함께 새로운 경험을 시작하세요.
+              <br />
+              당신의 즐거운 순간을 더욱 빛나게 만들어 드립니다.
+            </Subtitle>
+            <StyledInput
+              type="text"
+              placeholder="아이디 (영어 6자리 이상)"
+              value={id}
+              onChange={(e) => {
+                setId(e.target.value.trim());
+                validateId(e.target.value.trim());
+              }}
+            />
+            {idError && <ErrorMessage>{idError}</ErrorMessage>}
+            <StyledInput
+              type="password"
+              placeholder="비밀번호 (8자리 이상)"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value.trim());
+                validatePassword(e.target.value.trim());
+              }}
+            />
+            <StyledInput
+              type="password"
+              placeholder="비밀번호 확인"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value.trim())}
+            />
+            {passwordError && <ErrorMessage>{passwordError}</ErrorMessage>}
+            <Button type="submit" disabled={!isFormValid}>
+              가입하기
+            </Button>
+          </Form>
+        </Containe>
+      </Wrapper>
+    </>
   );
 };
 

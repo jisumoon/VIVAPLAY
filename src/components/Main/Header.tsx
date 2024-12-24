@@ -7,6 +7,8 @@ import { getAutocompleteResults } from "../../api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { useLocation } from "react-router-dom";
+import { useRecoilState } from "recoil";
+import { islogin } from "../../atom";
 
 const Nav = styled(motion.nav)<{ $isScrolled: boolean }>`
   width: 100%;
@@ -213,6 +215,7 @@ interface Form {
 }
 
 const Header = () => {
+  const [isLogin, setIslogin] = useRecoilState(islogin);
   const [searchOpen, setSearchOpen] = useState(false);
   const homeMatch = useMatch("/");
   const LoveMatch = useMatch("/love");
@@ -285,10 +288,12 @@ const Header = () => {
         const parsedUsers = JSON.parse(storedUsers);
         if (Array.isArray(parsedUsers) && parsedUsers.length > 0) {
           setIsLoggedIn(true);
+          setIslogin(true);
           setUsername(parsedUsers[0].id);
         }
       } else {
         setIsLoggedIn(false);
+        setIslogin(false);
         setUsername("");
       }
     };
@@ -308,6 +313,7 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem("users");
     setIsLoggedIn(false);
+    setIslogin(false);
     setUsername("");
     alert("로그아웃 되었습니다.");
     navigate("/");

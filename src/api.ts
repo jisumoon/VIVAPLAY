@@ -164,25 +164,52 @@ export const getPopularMovies = () => {
     .then((data) => data.results || []);
 };
 
+const translateToKoreanCertification = (usCertification: string): string => {
+  const certificationMap: Record<string, string> = {
+    G: "전체",
+    PG: "12",
+    "PG-13": "15",
+    R: "19",
+    "NC-17": "19",
+    NR: "미정",
+    "": "미정",
+  };
+
+  return certificationMap[usCertification] || "미정"; // 매핑되지 않은 값은 "미정"
+};
+
 // 여러 영화의 연령 등급을 한 번에 가져오기
 export const getCertificationsForMovies = async (movieIds: number[]) => {
   const certificationPromises = movieIds.map(async (id) => {
-    const certification = await getCertification(id);
-    return { id, certification };
+    const data = await getCertification(id);
+
+    // 미국 (US) 데이터를 확인
+    const usRelease = data.results.find(
+      (release: any) => release.iso_3166_1 === "US"
+    );
+
+    const usCertification =
+      usRelease?.release_dates?.[0]?.certification || "NR";
+
+    const koreanCertification = translateToKoreanCertification(usCertification);
+
+    return { id, certification: koreanCertification };
   });
 
   const results = await Promise.all(certificationPromises);
 
-  // 영화 ID를 키로, 연령 등급을 값으로 하는 객체 반환
+  // 영화 ID를 키로, 한국식 등급을 값
   return results.reduce(
     (acc, { id, certification }) => ({ ...acc, [id]: certification }),
     {} as Record<number, string>
   );
 };
 
-//영화 연령 등급
-export const getCertification = (movieId: number) => {
-  return fetch(
+// 영화 연령 등급 API 호출
+export const getCertification = async (movieId: number) => {
+  const response = await fetch(
     `${BASE_PATH}/movie/${movieId}/release_dates?api_key=${API_KEY}`
-  ).then((response) => response.json());
+  );
+  const data = await response.json();
+  return data;
 };

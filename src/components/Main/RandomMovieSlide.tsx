@@ -1,23 +1,49 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { makeImagePath } from "../../utils";
-import { getCredits, getMovies, Movie } from "../../api";
-import { useParams } from "react-router-dom";
+import { getCertificationsForMovies, getMovies, Movie } from "../../api";
+import { useNavigate } from "react-router-dom";
+
+interface CustomProps {
+  istype: string;
+}
+
+interface SliderProps {
+  movies: Movie[]; // 영화데이터 배열
+}
+
+const List = styled.div`
+  font-size: 1.6rem;
+  height: 100%;
+  width: 100%;
+`;
+
+const TitleWrap = styled.div`
+  max-width: 1300px;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto 10px;
+`;
 
 const Title = styled.h3`
   color: ${({ theme }) => theme.white.lighter};
   word-break: keep-all;
-  margin-top: 10px;
+  font-weight: 400;
+  font-size: 26px;
 `;
 
-const Wrap = styled(motion.div)``;
+const Arrow = styled.div`
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+`;
 
 const Box = styled.div`
-  height: 30px;
+  width: 40px;
+  height: 50px;
   padding: 10px 14px;
-  height: auto;
   background-color: ${({ theme }) => theme.black.veryDark};
   border-radius: 10px;
   color: ${({ theme }) => theme.white.lighter};
@@ -25,6 +51,93 @@ const Box = styled.div`
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  position: relative;
+`;
+
+const PostBox = styled.div<CustomProps>`
+  width: ${(prosp) => (prosp.istype === "Search" ? "240px" : "300px")};
+  height: 180px;
+  background-color: ${({ theme }) => theme.black.veryDark};
+  border-radius: 10px;
+  color: ${({ theme }) => theme.white.lighter};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: ${(prosp) => (prosp.istype === "Search" ? "10px" : "0px")};
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  color: ${(props) => props.theme.white.lighter};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  backdrop-filter: blur(2px);
+  div {
+    display: flex;
+    gap: 10px;
+  }
+
+  .title {
+    font-size: 16px;
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .age-restriction {
+    font-size: 14px;
+    padding: 2px 5px;
+    color: white;
+    border-radius: 4px;
+    font-weight: bold;
+    background: ${(props) => props.theme.blue.lighter};
+  }
+`;
+
+const ImgWrap = styled.div`
+  max-width: 100%;
+  height: 70%;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  justify-items: center;
+  padding-top: 14px;
+  /* margin: 20px auto; */
+  margin: 0 auto;
+  background-color: ${({ theme }) => theme.black.veryDark};
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+`;
+
+const Slider = styled(motion.div).withConfig({
+  shouldForwardProp: (prop) => prop !== "istype",
+})<CustomProps>`
+  position: absolute;
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  justify-content: center;
+  justify-items: center;
+  /* flex-direction: column; */
+  gap: 10px;
+  ${(props) => (props.istype === "Search" ? "flex-direction: column" : "")}
+`;
+
+const SliderWrap = styled.div`
+  height: 100%;
+  margin: 0 auto;
 `;
 
 const PosterWrap = styled.div`
@@ -36,69 +149,6 @@ const PosterWrap = styled.div`
   border-radius: 16px;
 `;
 
-const List = styled.div`
-  font-size: 1.6rem;
-`;
-
-const TitleWrap = styled.div`
-  max-width: 1300px;
-  display: flex;
-  justify-content: space-between;
-  margin: 0 auto;
-`;
-
-const Arrow = styled.div`
-  display: flex;
-  gap: 10px;
-  cursor: pointer;
-`;
-
-// const ImgWrap = styled.div`
-//   display: flex;
-//   max-width: 1300px;
-//   height: 280px;
-//   padding: 14px 80px;
-//   margin: 20px auto;
-//   justify-content: space-between;
-//   background-color: ${({ theme }) => theme.black.veryDark};
-//   border-radius: 16px;
-//   overflow: hidden;
-//   position: relative;
-// `;
-
-const ImgWrap = styled.div`
-  max-width: 1300px;
-  height: 240px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-top: 14px;
-  margin: 20px auto;
-  background-color: ${({ theme }) => theme.black.veryDark};
-  border-radius: 16px;
-  overflow: hidden;
-  position: relative;
-`;
-
-const Slider = styled(motion.div)`
-  position: absolute;
-  width: 100%;
-  max-width: 1000px;
-  display: flex;
-  justify-content: center;
-  justify-items: center;
-  gap: 10px;
-`;
-
-const SliderWrap = styled.div`
-  height: 100%;
-  div:nth-child(1) {
-    // 이미지 사이즈
-    width: 300px;
-    height: 180px;
-  }
-`;
-
 const Name = styled.h5`
   margin-top: 6px;
   font-size: 16px;
@@ -106,73 +156,81 @@ const Name = styled.h5`
   color: ${({ theme }) => theme.white.darker};
 `;
 
-const CharacName = styled.div`
-  margin-top: 6px;
-  font-size: 12px;
-  text-align: center;
-  color: ${({ theme }) => theme.white.darker};
-  opacity: 0.6;
+const BottomArrow = styled.div<CustomProps>`
+  display: ${(props) => (props.istype === "Search" ? "flex" : "none")};
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
 `;
 
 const RandomMovieSlide = ({
   reSize,
   middleSize,
+  type,
 }: {
   reSize: boolean;
   middleSize: boolean;
+  type: string;
 }) => {
   const [leaving, setLeaving] = useState(false);
   const [index, setIndex] = useState(0);
   const [offset, setOffSet] = useState(3); // offset - 페이지
   const [right, setRight] = useState(false);
-  const [randomMoive, setRamdomMovie] = useState<Movie[]>([]);
+  const [randomMovie, setRandomMovie] = useState<Movie[]>([]);
+  const [moviesWithCertifications, setMoviesWithCertifications] = useState<
+    Movie[]
+  >([]);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!middleSize && !reSize) {
-      setOffSet(3);
-    } else if (middleSize) {
-      setOffSet(2);
-    } else if (reSize) {
-      setOffSet(1);
+  const fetchMoviesWithCertifications = async () => {
+    if (randomMovie.length > 0) {
+      const movieIds = randomMovie.map((movie) => movie.id);
+      const certificationsMap = await getCertificationsForMovies(movieIds);
+
+      const updatedMovies = randomMovie.map((movie) => ({
+        ...movie,
+        certification: certificationsMap[movie.id] || "미정", // 등급이 없으면 "미정"
+      }));
+
+      setMoviesWithCertifications(updatedMovies);
     }
-  }, [reSize, middleSize]);
+  };
 
-  //영화
-  const { data: movies, isLoading: loading } = useQuery({
+  const { data: movies } = useQuery({
     queryKey: ["movies"],
-    queryFn: async () => {
-      return await getMovies();
-    },
+    queryFn: getMovies,
   });
-  //렌덤 영화 스토리지 저장
+
   useEffect(() => {
     if (movies?.results) {
       const storedMovies = localStorage.getItem("randomMovies");
 
       if (storedMovies) {
-        // 로컬 저장소에 저장된 데이터가 있으면 복원
-        setRamdomMovie(JSON.parse(storedMovies));
+        setRandomMovie(JSON.parse(storedMovies));
       } else {
-        // 로컬 저장소에 데이터가 없으면 랜덤 데이터를 생성
         const shuffled = [...movies.results].sort(() => Math.random() - 0.5);
         const selected = shuffled.slice(0, 12);
-        setRamdomMovie(selected);
-
-        // 로컬 저장소에 저장
+        setRandomMovie(selected);
         localStorage.setItem("randomMovies", JSON.stringify(selected));
       }
     }
   }, [movies]);
 
-  //슬라이드
+  useEffect(() => {
+    fetchMoviesWithCertifications();
+  }, [randomMovie]);
+
+  // Slider navigation logic
   const toggleRandom = () => setLeaving((prev) => !prev);
 
   const crewIndexFn = (bt: string) => {
-    if (movies) {
+    if (moviesWithCertifications.length > 0) {
       if (leaving) return;
       setLeaving(true);
 
-      const total = randomMoive.length;
+      const total = moviesWithCertifications.length;
       const castmaxIndex = Math.ceil(total / offset) - 1;
       if (bt === "right") {
         setRight(true);
@@ -194,6 +252,15 @@ const RandomMovieSlide = ({
     exit: (custom: boolean) => ({
       x: custom ? -window.innerWidth - 10 : window.innerWidth + 10,
     }),
+  };
+
+  const onDetail = (movieId: number | undefined) => {
+    if (!movieId) {
+      alert("해당 영화 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    navigate(`/movies/${movieId}`);
   };
 
   return (
@@ -219,23 +286,27 @@ const RandomMovieSlide = ({
             animate="visible"
             exit="exit"
             transition={{ duration: 1, type: "tween" }}
+            istype={type}
           >
-            {randomMoive
+            {moviesWithCertifications
               .slice(index * offset, index * offset + offset)
               .map((movie) => (
                 <SliderWrap key={movie.id}>
-                  <Box>
+                  <PostBox onClick={() => onDetail(movie.id)} istype={type}>
                     <PosterWrap>
                       <img
                         src={makeImagePath(movie.poster_path)}
                         width={"100%"}
+                        alt={movie.title}
                       />
                     </PosterWrap>
-                  </Box>
-                  <Wrap>
-                    <Name>{movie.title}</Name>
-                    {/* <CharacName>{cast.character}</CharacName> */}
-                  </Wrap>
+                    <Overlay>
+                      <Name className="title">{movie.title}</Name>
+                      <div className="age-restriction">
+                        {movie.certification || "미정"}
+                      </div>
+                    </Overlay>
+                  </PostBox>
                 </SliderWrap>
               ))}
           </Slider>

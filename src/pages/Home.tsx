@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
 import { getMovies, GetMoviesResult } from "../api";
@@ -9,6 +9,8 @@ import TopSlider from "../components/Main/TopSlider";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
+import Loading from "../components/Loading";
+import { Helmet } from "react-helmet";
 
 const Container = styled.div`
   width: 100%;
@@ -184,6 +186,8 @@ const Home = () => {
 
   const sliderRef = useRef<Slider | null>(null);
 
+  const [isDelayedLoading, setIsDelayedLoading] = useState<boolean>(true);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
       case REMOTE_KEYS.RIGHT:
@@ -228,101 +232,124 @@ const Home = () => {
     arrows: false,
   };
 
+  useEffect(() => {
+    const timer = setTimeout(() => setIsDelayedLoading(false), 4000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const isCurrentlyLoading = isLoading || isDelayedLoading;
+
   return (
-    <Container>
-      {isLoading ? (
-        <Loader>Loading...</Loader>
-      ) : (
-        <>
-          {data?.results[0] && (
-            <>
-              <div
-                tabIndex={0}
-                onKeyDown={handleKeyDown}
-                style={{ outline: "none" }}
-              >
-                <Slider ref={sliderRef} {...settings}>
-                  {data.results.slice(0, 5).map((movie) => (
-                    <div key={movie.id}>
-                      <Banner
-                        $bgPhoto={
-                          movie.backdrop_path
-                            ? makeImagePath(movie.backdrop_path)
-                            : "movie.jpg"
-                        }
+    <>
+      <Helmet>
+        <title>ViVaPlay</title>
+        <meta property="og:title" content="영화의 즐거움을 담아, VIVA Play" />
+        <meta
+          property="og:description"
+          content="즐거움이 가득한 VIVA Play에서 다양한 영화를 만나보세요"
+        />
+        <meta
+          property="og:image"
+          content={`${process.env.PUBLIC_URL}/vivamain.png`}
+        />
+      </Helmet>
+      <Container>
+        {isCurrentlyLoading ? (
+          <Loader>
+            <Loading />
+          </Loader>
+        ) : (
+          <>
+            {data?.results[0] && (
+              <>
+                <div
+                  tabIndex={0}
+                  onKeyDown={handleKeyDown}
+                  style={{ outline: "none" }}
+                >
+                  <Slider ref={sliderRef} {...settings}>
+                    {data.results.slice(0, 5).map((movie) => (
+                      <div key={movie.id}>
+                        <Banner
+                          $bgPhoto={
+                            movie.backdrop_path
+                              ? makeImagePath(movie.backdrop_path)
+                              : "movie.jpg"
+                          }
+                        >
+                          <Title>{movie.original_title}</Title>
+                          <Overview>{movie.overview}</Overview>
+                          <ButtonGroup>
+                            <BannerButton
+                              tabIndex={0}
+                              onClick={() => onDetail(movie.id)}
+                              onKeyDown={(e) =>
+                                e.key === "Enter" && onDetail(movie.id)
+                              }
+                            >
+                              ▶ 더보기
+                            </BannerButton>
+                          </ButtonGroup>
+                        </Banner>
+                      </div>
+                    ))}
+                  </Slider>
+                </div>
+                <GenreSelectorWrapper>
+                  <GenreSelectorTitle>
+                    비바플레이에서 추천하는 프로그램은?
+                  </GenreSelectorTitle>
+                  <GenreSelector tabIndex={0}>
+                    {genres.map((genre) => (
+                      <button
+                        key={genre.id}
+                        tabIndex={0}
+                        onClick={() => setSelectedGenre(genre.id)}
                       >
-                        <Title>{movie.original_title}</Title>
-                        <Overview>{movie.overview}</Overview>
-                        <ButtonGroup>
-                          <BannerButton
-                            tabIndex={0}
-                            onClick={() => onDetail(movie.id)}
-                            onKeyDown={(e) =>
-                              e.key === "Enter" && onDetail(movie.id)
-                            }
-                          >
-                            ▶ 더보기
-                          </BannerButton>
-                        </ButtonGroup>
-                      </Banner>
-                    </div>
-                  ))}
-                </Slider>
-              </div>
-              <GenreSelectorWrapper>
-                <GenreSelectorTitle>
-                  비바플레이에서 추천하는 프로그램은?
-                </GenreSelectorTitle>
-                <GenreSelector tabIndex={0}>
-                  {genres.map((genre) => (
-                    <button
-                      key={genre.id}
-                      tabIndex={0}
-                      onClick={() => setSelectedGenre(genre.id)}
-                    >
-                      {genre.label}
-                    </button>
-                  ))}
-                </GenreSelector>
-                ;
-              </GenreSelectorWrapper>
-            </>
-          )}
+                        {genre.label}
+                      </button>
+                    ))}
+                  </GenreSelector>
+                  ;
+                </GenreSelectorWrapper>
+              </>
+            )}
 
-          {selectedGenre && filteredMovies && (
-            <SliderComponent
-              movies={filteredMovies}
-              title={` 오늘의 ${
-                {
-                  "28": "액션을",
-                  "35": "코미디를",
-                  "18": "드라마를",
-                  "27": "공포를",
-                }[selectedGenre]
-              } 추천합니다`}
-            />
-          )}
-          {data && <TopSlider />}
-          {data &&
-            slideTitles.map((title, idx) => {
-              const start = idx * 6;
-              const end = start + 6;
-              const sliderMovies =
-                data.results.length >= end
-                  ? data.results.slice(start, end)
-                  : data.results.slice(start);
+            {selectedGenre && filteredMovies && (
+              <SliderComponent
+                movies={filteredMovies}
+                title={` 오늘의 ${
+                  {
+                    "28": "액션을",
+                    "35": "코미디를",
+                    "18": "드라마를",
+                    "27": "공포를",
+                  }[selectedGenre]
+                } 추천합니다`}
+              />
+            )}
+            {data && <TopSlider />}
+            {data &&
+              slideTitles.map((title, idx) => {
+                const start = idx * 6;
+                const end = start + 6;
+                const sliderMovies =
+                  data.results.length >= end
+                    ? data.results.slice(start, end)
+                    : data.results.slice(start);
 
-              return (
-                <SliderComponent
-                  key={idx}
-                  movies={sliderMovies}
-                  title={title}
-                />
-              );
-            })}
-        </>
-      )}
-    </Container>
+                return (
+                  <SliderComponent
+                    key={idx}
+                    movies={sliderMovies}
+                    title={title}
+                  />
+                );
+              })}
+          </>
+        )}
+      </Container>
+    </>
   );
 };
 

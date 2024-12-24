@@ -204,26 +204,22 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
   const [moviesWithCertifications, setMoviesWithCertifications] =
     useState<Movie[]>(movies); //로컬상태
 
-  // 영화 등급 가져오기
-  const fetchMoviesWithCertifications = async (
-    movies: Movie[]
-  ): Promise<Movie[]> => {
+  // 영화 등급 가져오기 함수
+  const fetchMoviesWithCertifications = async () => {
     const movieIds = movies.map((movie) => movie.id);
     const certificationsMap = await getCertificationsForMovies(movieIds);
 
-    return movies.map((movie) => ({
+    const updatedMovies = movies.map((movie) => ({
       ...movie,
-      certification: certificationsMap[movie.id] || "15",
+      certification: certificationsMap[movie.id] || "15", // 기본값 "미정"
     }));
+
+    setMoviesWithCertifications(updatedMovies);
   };
 
   useEffect(() => {
-    const fetchMovies = async () => {
-      const updatedMovies = await fetchMoviesWithCertifications(movies);
-      setMoviesWithCertifications(updatedMovies);
-    };
-
-    fetchMovies();
+    fetchMoviesWithCertifications();
+    console.log(movies);
   }, [movies]);
 
   //리모컨 핸들러
@@ -309,11 +305,11 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
     >
       {title && <SliderTitle>{title}</SliderTitle>}
       <StyledSlider {...settings}>
-        {movies.map((movie, index) => (
+        {moviesWithCertifications.map((movie, index) => (
           <Box
             key={movie.id}
             $isFocused={index === focusedIndex}
-            $isUsingRemote={isUsingRemote.current} // 리모컨 사용 여부 전달
+            $isUsingRemote={isUsingRemote.current}
             $bgPhoto={
               movie.backdrop_path
                 ? makeImagePath(movie.backdrop_path)
@@ -338,6 +334,13 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
                 <FontAwesomeIcon
                   icon={faHeart}
                   onClick={() => toggleFavorite(movie.id)}
+                  style={{
+                    color: favoriteMovies.includes(movie.id)
+                      ? "#2954CC"
+                      : "white",
+                    cursor: "pointer",
+                    transition: "color 0.3s ease",
+                  }}
                 />
               </div>
               <div className="info-rating">

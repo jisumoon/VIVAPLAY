@@ -7,6 +7,7 @@ import Love from "./pages/Love";
 import Detail from "./pages/Detail";
 import MobileSearch from "./pages/MobileSearch";
 import Join from "./pages/Join";
+import PodectRoute from "./ProdectRoute";
 
 const router = createBrowserRouter([
   {
@@ -19,7 +20,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/movies/:movieId",
-        element: <Detail />,
+        element: (
+          <PodectRoute>
+            <Detail />
+          </PodectRoute>
+        ),
       },
       {
         path: "login",
@@ -31,7 +36,11 @@ const router = createBrowserRouter([
       },
       {
         path: "love",
-        element: <Love />,
+        element: (
+          <PodectRoute>
+            <Love />
+          </PodectRoute>
+        ),
       },
       {
         path: "search",

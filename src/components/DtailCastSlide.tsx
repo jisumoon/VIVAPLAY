@@ -9,6 +9,7 @@ const Title = styled.h3`
   color: ${({ theme }) => theme.white.lighter};
   word-break: keep-all;
   margin-top: 10px;
+  font-weight: 400;
 `;
 const Wrap = styled(motion.div)``;
 

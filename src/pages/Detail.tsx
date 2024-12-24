@@ -1,10 +1,4 @@
-import {
-  getVideos,
-  getMovies,
-  GetMoviesResult,
-  getIdDetaile,
-  IdMovie,
-} from "../api";
+import { getVideos, getIdDetaile, IdMovie } from "../api";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import YouTube from "react-youtube";
@@ -13,6 +7,9 @@ import DtailCastSlide from "../components/DtailCastSlide";
 import RandomMovieSlide from "../../src/components/Main/RandomMovieSlide";
 import DetailMovieRight from "../components/DetailMovieRight";
 import { useEffect, useState } from "react";
+import Loading from "../components/Loading";
+import { Helmet } from "react-helmet";
+import { makeImagePath } from "../utils";
 
 const Container = styled.div`
   background-color: ${(props) => props.theme.black.veryDark};
@@ -55,7 +52,7 @@ const Right = styled.div`
 `;
 
 const RightMobile = styled.div`
-  height: inherit;
+  height: 1005;
   display: none;
   @media screen and (max-width: 768px) {
     display: block;
@@ -82,7 +79,7 @@ const MovieWrap = styled.div`
 
 const Crewrap = styled.div`
   width: 100%;
-  height: 100%;
+  height: 400px;
   background-color: ${({ theme }) => theme.black.lighter};
   border-radius: 16px;
   padding: 40px 60px;
@@ -90,7 +87,8 @@ const Crewrap = styled.div`
 
 const RandomMoviewrap = styled.div`
   width: 100%;
-  height: 100%;
+  /* height: 100%; */
+  height: 400px;
   background-color: ${({ theme }) => theme.black.lighter};
   border-radius: 16px;
   padding: 40px 60px;
@@ -102,6 +100,7 @@ const Detail = () => {
   const [middleSize, setMiddleSize] = useState(
     window.innerWidth < 1500 && window.innerWidth >= 1200
   );
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); //로그인 여부
   // const { movieId } = useParams<{ movieId: string }>();
   //반응형
   useEffect(() => {
@@ -116,11 +115,30 @@ const Detail = () => {
     };
   }, []);
 
-  // //영화데이터들
-  // const { data, isLoading } = useQuery<GetMoviesResult>({
-  //   queryKey: ["nowMovie"],
-  //   queryFn: getMovies,
-  // });
+  // 로컬스토리지 확인
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedUsers = localStorage.getItem("users");
+      if (storedUsers) {
+        const parsedUsers = JSON.parse(storedUsers);
+        if (Array.isArray(parsedUsers) && parsedUsers.length > 0) {
+          setIsLoggedIn(true);
+        }
+      } else {
+        setIsLoggedIn(false);
+      }
+    };
+
+    // storage 이벤트 리스너 등록
+    window.addEventListener("storage", handleStorageChange);
+
+    // 초기 로드 시 상태 확인
+    handleStorageChange();
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   //영화 id 데이터
   const { data: nowMovie, isLoading } = useQuery<IdMovie>({
@@ -130,18 +148,6 @@ const Detail = () => {
       return await getIdDetaile(movieId);
     },
   });
-  // console.log("movieId", movieId);
-  console.log("nowMovie", nowMovie);
-  // const nowMovieId = nowMovie?.id;
-  // //해당영화정보
-  // const nowMovie = data?.results.filter(
-  //   (movie) => movie.id === Number(movieId)
-  // )[0];
-
-  //해당영화 id
-  // const nowMovieId = data?.results.filter(
-  //   (movie) => String(movie.id) === movieId
-  // )[0].id;
 
   // 영화 유투브
   const { data: video, isLoading: videoLoding } = useQuery({
@@ -153,49 +159,62 @@ const Detail = () => {
   });
 
   return (
-    <Container>
-      {isLoading ? (
-        <Loader>Loading...</Loader>
-      ) : (
-        <>
-          <Inner>
-            <Left>
-              <MovieWrap>
-                {videoLoding ? (
-                  <Loader>Loading...</Loader>
-                ) : (
+    <>
+      <Helmet>
+        <title>{`${nowMovie?.title}_ViVaPlay`}</title>
+        <meta property="og:title" content={`${nowMovie?.title},ViVaPlay`} />
+        <meta property="og:description" content={`${nowMovie?.overview}`} />
+        <meta
+          property="og:image"
+          content={nowMovie ? makeImagePath(nowMovie.backdrop_path) : ""}
+        />
+      </Helmet>
+      <Container>
+        {isLoading ? (
+          <Loader>
+            <Loading />
+          </Loader>
+        ) : (
+          <>
+            <Inner>
+              <Left>
+                <MovieWrap>
                   <YouTube videoId={video?.results?.[0]?.key || ""} />
-                )}
-              </MovieWrap>
-              <RightMobile>
+                </MovieWrap>
+                <RightMobile>
+                  <DetailMovieRight
+                    reSize={reSize}
+                    nowMovie={nowMovie}
+                    nowMovieId={movieId}
+                  />
+                </RightMobile>
+                <Crewrap>
+                  <DtailCastSlide
+                    reSize={reSize}
+                    middleSize={middleSize}
+                    nowMovieId={movieId}
+                  />
+                </Crewrap>
+                <RandomMoviewrap>
+                  <RandomMovieSlide
+                    reSize={reSize}
+                    middleSize={middleSize}
+                    type={"Detail"}
+                  />
+                </RandomMoviewrap>
+              </Left>
+              <Right>
                 <DetailMovieRight
                   reSize={reSize}
                   nowMovie={nowMovie}
                   nowMovieId={movieId}
                 />
-              </RightMobile>
-              <Crewrap>
-                <DtailCastSlide
-                  reSize={reSize}
-                  middleSize={middleSize}
-                  nowMovieId={movieId}
-                />
-              </Crewrap>
-              <RandomMoviewrap>
-                <RandomMovieSlide reSize={reSize} middleSize={middleSize} />
-              </RandomMoviewrap>
-            </Left>
-            <Right>
-              <DetailMovieRight
-                reSize={reSize}
-                nowMovie={nowMovie}
-                nowMovieId={movieId}
-              />
-            </Right>
-          </Inner>
-        </>
-      )}
-    </Container>
+              </Right>
+            </Inner>
+          </>
+        )}
+      </Container>
+    </>
   );
 };
 

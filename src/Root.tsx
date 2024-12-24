@@ -32,7 +32,7 @@ const GlobalStyle = createGlobalStyle`
 
   body {
     font-family: 'Pretendard-Regular';
-    background: ${(props) => props.theme.black.lighter};
+    background: ${(props) => props.theme.black.veryDark};
   }
 
 `;

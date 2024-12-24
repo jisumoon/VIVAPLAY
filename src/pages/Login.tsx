@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ReactComponent as VivaPlayLogo } from "../vivaplay.svg";
+import { useRecoilState } from "recoil";
+import { islogin } from "../atom";
+import { Helmet } from "react-helmet";
 
 const Wrapper = styled.div`
   width: 100%;
@@ -124,6 +127,7 @@ const Login: React.FC = () => {
   const [id, setId] = useState<string>("");
   const [pw, setPw] = useState<string>("");
   const navigate = useNavigate();
+  const [isLogin, setIslogin] = useRecoilState(islogin);
 
   const hashPassword = async (password: string): Promise<string> => {
     const encoder = new TextEncoder();
@@ -153,6 +157,7 @@ const Login: React.FC = () => {
 
     if (matchedUser) {
       alert("비바플레이에 오신 것을 환영합니다.");
+      setIslogin(true);
       navigate("/"); // 메인 페이지로 이동
     } else {
       alert("아이디 또는 비밀번호가 일치하지 않습니다.");
@@ -168,40 +173,54 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Wrapper>
-      <Containe>
-        <Logo onClick={handleLogo}>
-          <VivaPlayLogo />
-        </Logo>
-        <Form onSubmit={handleLogin}>
-          <Title>로그인</Title>
-          <Subtitle>
-            로그인하고 당신의 세상을 열어보세요.
-            <br />
-            당신의 즐거운 순간을 더욱 빛나게 만들어 드립니다.
-          </Subtitle>
-          <StyledInput
-            type="text"
-            placeholder="아이디"
-            value={id}
-            onChange={(e) => setId(e.target.value)}
-            required
-          />
-          <StyledInput
-            type="password"
-            placeholder="비밀번호"
-            value={pw}
-            onChange={(e) => setPw(e.target.value)}
-            required
-          />
+    <>
+      <Helmet>
+        <title>ViVaPlay</title>
+        <meta property="og:title" content="영화의 즐거움을 담아, VIVA Play" />
+        <meta
+          property="og:description"
+          content="즐거움이 가득한 VIVA Play에 로그인하여여 다양한 영화를 만나보세요"
+        />
+        <meta
+          property="og:image"
+          content={`${process.env.PUBLIC_URL}/vivamain.png`}
+        />
+      </Helmet>
+      <Wrapper>
+        <Containe>
+          <Logo onClick={handleLogo}>
+            <VivaPlayLogo />
+          </Logo>
+          <Form onSubmit={handleLogin}>
+            <Title>로그인</Title>
+            <Subtitle>
+              로그인하고 당신의 세상을 열어보세요.
+              <br />
+              당신의 즐거운 순간을 더욱 빛나게 만들어 드립니다.
+            </Subtitle>
+            <StyledInput
+              type="text"
+              placeholder="아이디"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              required
+            />
+            <StyledInput
+              type="password"
+              placeholder="비밀번호"
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+              required
+            />
 
-          <Button type="submit">로그인</Button>
-          <Join onClick={handleJoin}>
-            VIVA 회원이 아니신가요? <b>지금 가입하세요.</b>
-          </Join>
-        </Form>
-      </Containe>
-    </Wrapper>
+            <Button type="submit">로그인</Button>
+            <Join onClick={handleJoin}>
+              VIVA 회원이 아니신가요? <b>지금 가입하세요.</b>
+            </Join>
+          </Form>
+        </Containe>
+      </Wrapper>
+    </>
   );
 };
 
