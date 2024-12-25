@@ -171,7 +171,7 @@ const Login: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>ViVaPlay</title>
+        <title>VIVAPLAY</title>
         <meta property="og:title" content="영화의 즐거움을 담아, VIVA Play" />
         <meta
           property="og:description"
