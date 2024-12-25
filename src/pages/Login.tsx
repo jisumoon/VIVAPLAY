@@ -119,15 +119,11 @@ const Join = styled.div`
   }
 `;
 
-type LoginProps = {
-  onLogin: (isAuthenticated: boolean) => void;
-};
-
 const Login: React.FC = () => {
   const [id, setId] = useState<string>("");
   const [pw, setPw] = useState<string>("");
   const navigate = useNavigate();
-  const [isLogin, setIslogin] = useRecoilState(islogin);
+  const [, setIslogin] = useRecoilState(islogin);
 
   const hashPassword = async (password: string): Promise<string> => {
     const encoder = new TextEncoder();

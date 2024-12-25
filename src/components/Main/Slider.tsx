@@ -193,9 +193,7 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
     const savedFavorites = localStorage.getItem("favoriteMovies");
     return savedFavorites ? JSON.parse(savedFavorites) : [];
   });
-  const [certifications, setCertifications] = useState<Record<number, string>>(
-    {}
-  ); // 영화별 등급 상태
+
   const sliderRef = useRef<Slider | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(0); // 포커스된 슬라이드 인덱스
   const [isFavoriteFocused, setIsFavoriteFocused] = useState<boolean>(false); // 좋아요 버튼 포커스 상태
@@ -230,7 +228,7 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
 
   useEffect(() => {
     fetchMoviesWithCertifications();
-  }, [movies]);
+  }, [fetchMoviesWithCertifications]);
 
   //리모컨 핸들러
   useEffect(() => {

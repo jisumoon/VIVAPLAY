@@ -150,7 +150,7 @@ const Detail = () => {
   });
 
   // 영화 유투브
-  const { data: video, isLoading: videoLoding } = useQuery({
+  const { data: video } = useQuery({
     queryKey: ["video", movieId],
     queryFn: async () => {
       if (!movieId) return { results: [] };

@@ -131,7 +131,7 @@ const DtailCastSlide = ({
   }, [reSize, middleSize]);
 
   //영화 출연진
-  const { data: credits, isFetching } = useQuery({
+  const { data: credits } = useQuery({
     queryKey: ["credits", nowMovieId],
     queryFn: async () => {
       if (!nowMovieId) return { results: [] };

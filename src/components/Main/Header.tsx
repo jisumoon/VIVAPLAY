@@ -181,10 +181,6 @@ const AuthLink = styled.span`
   }
 `;
 
-interface Form {
-  keyword: string;
-}
-
 const Header = () => {
   const [isLogin, setIslogin] = useRecoilState(islogin);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -201,9 +197,7 @@ const Header = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); //로그인 여부
   const [username, setUsername] = useState(""); // 로그인 사용자
-  const location = useLocation(); // 경로 추적적
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1); // 추천 항목 포커스
-  const inputRef = useRef<HTMLInputElement | null>(null); // 검색 바 포커스 관리
 
   // 메인 이동
   const goToMain = () => {
@@ -277,23 +271,19 @@ const Header = () => {
   }, [setIsLoggedIn, setIslogin, setUsername]);
 
   //로그아웃
-  // 로그아웃 핸들러
   const handleLogout = () => {
     localStorage.removeItem("users");
 
-    // 상태 변경
     setIsLoggedIn(false);
     setIslogin(false);
     setUsername("");
 
-    // 사용자 정의 이벤트 트리거
     window.dispatchEvent(new Event("user-logout"));
 
     alert("로그아웃 되었습니다.");
     navigate("/");
   };
 
-  // storage 이벤트와 사용자 정의 이벤트 처리
   useEffect(() => {
     const handleStorageChange = () => {
       const storedUsers = localStorage.getItem("users");
@@ -311,13 +301,10 @@ const Header = () => {
       }
     };
 
-    // storage 이벤트 감지
     window.addEventListener("storage", handleStorageChange);
 
-    // 사용자 정의 이벤트 감지
     window.addEventListener("user-logout", handleStorageChange);
 
-    // 초기 상태 확인
     handleStorageChange();
 
     return () => {
@@ -345,21 +332,6 @@ const Header = () => {
     if (!searchOpen) {
       setSuggestions([]); // 서치바를 닫을 때 추천 목록 초기화
       setSearchTerm(""); // 검색어 초기화
-    }
-  };
-
-  //검색어 입력 유효 처리
-  const onValid = (data: { keyword: string }) => {
-    const trimmedKeyword = data.keyword.trim();
-    if (trimmedKeyword) {
-      setSearchParams({ keyword: trimmedKeyword }); // 쿼리 값 설정
-      navigate(`/search?keyword=${trimmedKeyword}`, { replace: true }); // 검색 페이지로 이동
-
-      setSearchTerm(""); // 검색어 초기화 (자동완성과 상관없이 초기화)
-      setSuggestions([]); // 추천 목록 닫기
-      if (clearSuggestionsTimeoutRef.current) {
-        clearTimeout(clearSuggestionsTimeoutRef.current); // 타이머 제거
-      }
     }
   };
 

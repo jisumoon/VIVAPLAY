@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { makeImagePath } from "../../utils";
 import { getCertificationsForMovies, getMovies, Movie } from "../../api";
@@ -8,10 +8,6 @@ import { useNavigate } from "react-router-dom";
 
 interface CustomProps {
   istype: string;
-}
-
-interface SliderProps {
-  movies: Movie[]; // 영화데이터 배열
 }
 
 const List = styled.div`
@@ -154,15 +150,6 @@ const Name = styled.h5`
   font-size: 16px;
   text-align: center;
   color: ${({ theme }) => theme.white.darker};
-`;
-
-const BottomArrow = styled.div<CustomProps>`
-  display: ${(props) => (props.istype === "Search" ? "flex" : "none")};
-  width: 100%;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin-top: 10px;
 `;
 
 const RandomMovieSlide = ({
