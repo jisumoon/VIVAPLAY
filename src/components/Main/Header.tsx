@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { motion, useAnimation, useScroll } from "framer-motion";
-import { Link, useMatch, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useMatch, useNavigate } from "react-router-dom";
 import { ReactComponent as VivaPlayLogo } from "../../vivaplay.svg";
 import { getAutocompleteResults } from "../../api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
-import { useLocation } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { islogin } from "../../atom";
 
@@ -182,7 +181,7 @@ const AuthLink = styled.span`
 `;
 
 const Header = () => {
-  const [isLogin, setIslogin] = useRecoilState(islogin);
+  const [, setIslogin] = useRecoilState(islogin);
   const [searchOpen, setSearchOpen] = useState(false);
   const homeMatch = useMatch("/");
   const LoveMatch = useMatch("/love");
@@ -194,7 +193,6 @@ const Header = () => {
   const [suggestions, setSuggestions] = useState<any[]>([]); // 자동 완성 결과
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null); // 디바운싱 타이머
   const clearSuggestionsTimeoutRef = useRef<NodeJS.Timeout | null>(null); // 10초 타이머
-  const [searchParams, setSearchParams] = useSearchParams();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); //로그인 여부
   const [username, setUsername] = useState(""); // 로그인 사용자
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1); // 추천 항목 포커스

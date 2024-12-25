@@ -163,7 +163,7 @@ const RandomMovieSlide = ({
 }) => {
   const [leaving, setLeaving] = useState(false);
   const [index, setIndex] = useState(0);
-  const [offset, setOffSet] = useState(3); // offset - 페이지
+  const [offset] = useState(3);
   const [right, setRight] = useState(false);
   const [randomMovie, setRandomMovie] = useState<Movie[]>([]);
   const [moviesWithCertifications, setMoviesWithCertifications] = useState<
@@ -217,7 +217,7 @@ const RandomMovieSlide = ({
 
   useEffect(() => {
     fetchMoviesWithCertifications();
-  }, [randomMovie]);
+  }, [fetchMoviesWithCertifications]);
 
   // Slider navigation logic
   const toggleRandom = () => setLeaving((prev) => !prev);

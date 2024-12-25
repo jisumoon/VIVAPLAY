@@ -294,7 +294,7 @@ const Search = () => {
     window.innerWidth < 1500 && window.innerWidth >= 1200
   );
   const [focusedIndex, setFocusedIndex] = useState(0); // 리모컨 포커스 인덱스
-  const [isFocused, setIsFocused] = useState(false); // 포커스 상태
+  const [isFocused] = useState(false); // 포커스 상태
   const [sortType, setSortType] = useState("latest"); // 기본 정렬: 최신순
 
   //반응형
@@ -320,11 +320,10 @@ const Search = () => {
     }
   }, [reSize, middleSize]);
 
-  const { data: movieData, isLoading: movieLoading } =
-    useQuery<GetMoviesResult>({
-      queryKey: ["searchContents", keyword],
-      queryFn: () => searchContents(keyword),
-    });
+  const { data: movieData } = useQuery<GetMoviesResult>({
+    queryKey: ["searchContents", keyword],
+    queryFn: () => searchContents(keyword),
+  });
 
   const sortedMovies = (movieData?.results || []).sort((a, b) => {
     if (sortType === "latest") {

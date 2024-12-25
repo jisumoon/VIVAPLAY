@@ -278,11 +278,6 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
     ],
   };
 
-  //상세페이지
-  const onDetail = (movieId: number) => {
-    navigate(`/movies/${movieId}`);
-  };
-
   // 즐겨찾기 추가/삭제
   const toggleFavorite = (movieId: number) => {
     setFavoriteMovies((prev) => {

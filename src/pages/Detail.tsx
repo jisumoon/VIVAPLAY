@@ -100,7 +100,7 @@ const Detail = () => {
   const [middleSize, setMiddleSize] = useState(
     window.innerWidth < 1500 && window.innerWidth >= 1200
   );
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); //로그인 여부
+  const [, setIsLoggedIn] = useState<boolean>(false); //로그인 여부
   // const { movieId } = useParams<{ movieId: string }>();
   //반응형
   useEffect(() => {

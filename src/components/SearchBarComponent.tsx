@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { getAutocompleteResults, getPopularMovies, Movie } from "../api";
+import { getAutocompleteResults, getPopularMovies } from "../api";
 import { makeImagePath } from "../utils";
 
 const Wrapper = styled.div`
