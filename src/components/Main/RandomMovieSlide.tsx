@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import styled from "styled-components";
 import { makeImagePath } from "../../utils";
 import { getCertificationsForMovies, getMovies, Movie } from "../../api";
@@ -171,7 +171,7 @@ const RandomMovieSlide = ({
   >([]);
   const navigate = useNavigate();
 
-  const fetchMoviesWithCertifications = async () => {
+  const fetchMoviesWithCertifications = useCallback(async () => {
     if (randomMovie.length > 0) {
       const movieIds = randomMovie.map((movie) => movie.id);
 
@@ -179,7 +179,7 @@ const RandomMovieSlide = ({
 
       const certificationsMap = certificationsArray.reduce(
         (acc, { id, certification }) => {
-          acc[id] = certification;
+          acc[id] = certification || "미정";
           return acc;
         },
         {} as Record<number, string>
@@ -187,13 +187,16 @@ const RandomMovieSlide = ({
 
       const updatedMovies = randomMovie.map((movie) => ({
         ...movie,
-        certification: certificationsMap[movie.id] || "미정",
+        certification: certificationsMap[movie.id],
       }));
 
-      // 상태 업데이트
       setMoviesWithCertifications(updatedMovies);
     }
-  };
+  }, [randomMovie]);
+
+  useEffect(() => {
+    fetchMoviesWithCertifications();
+  }, [fetchMoviesWithCertifications]);
 
   const { data: movies } = useQuery({
     queryKey: ["movies"],
@@ -214,10 +217,6 @@ const RandomMovieSlide = ({
       }
     }
   }, [movies]);
-
-  useEffect(() => {
-    fetchMoviesWithCertifications();
-  }, [fetchMoviesWithCertifications]);
 
   // Slider navigation logic
   const toggleRandom = () => setLeaving((prev) => !prev);

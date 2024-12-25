@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import styled from "styled-components";
 import Slider from "react-slick";
 import { makeImagePath } from "../../utils";
@@ -202,8 +202,8 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
   const [moviesWithCertifications, setMoviesWithCertifications] =
     useState<Movie[]>(movies); //로컬상태
 
-  // 영화 등급 가져오기 함수
-  const fetchMoviesWithCertifications = async () => {
+  // 영화 등급 가져오기
+  const fetchMoviesWithCertifications = useCallback(async () => {
     const movieIds = movies.map((movie) => movie.id);
 
     const certificationsArray = await getCertificationsForMovies(movieIds);
@@ -213,7 +213,7 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
         acc[id] = certification;
         return acc;
       },
-      {} as Record<number, string> // 타입 명시
+      {} as Record<number, string>
     );
 
     // 기존 영화 데이터에 등급 추가
@@ -222,9 +222,8 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
       certification: certificationsMap[movie.id] || "15",
     }));
 
-    // 상태 업데이트
     setMoviesWithCertifications(updatedMovies);
-  };
+  }, [movies]);
 
   useEffect(() => {
     fetchMoviesWithCertifications();

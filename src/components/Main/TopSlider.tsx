@@ -119,7 +119,7 @@ const TopSlider: React.FC = () => {
   const [focusedIndex, setFocusedIndex] = useState<number>(0);
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const navigate = useNavigate();
-  const [isUsingRemote, setIsUsingRemote] = useState<boolean>(false);
+  const [isUsingRemote] = useState<boolean>(false);
 
   // 리모컨 핸들러
   useEffect(() => {
