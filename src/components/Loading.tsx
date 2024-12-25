@@ -1,32 +1,6 @@
 import { ReactComponent as VivaPlayLogo } from "../vivaplay.svg";
 import styled, { keyframes } from "styled-components";
 
-const wave = keyframes`
-  0% { transform: translateX(-400px); }
-  100% { transform: translateX(0); }
-`;
-
-const logoFill = keyframes`
-  0% {
-    transform: translateY(0px) rotate(20deg);
-  }
-  25% {
-    transform: translateY(-70px) translateX(100px) rotate(10deg);
-  }
-  50% {
-    transform: translateY(-100px) rotate(-15deg);
-  }
-  65% {
-    transform: translateY(-120px) translateX(-100px) rotate(0deg);
-  }
-  90% {
-    transform: translateY(-180px) translateX(0px) rotate(15deg);
-  }
-  100% {
-    transform: translateY(-180px) translateX(0px) rotate(10deg);
-  }
-`;
-
 const move = keyframes`
   0% {
     transform: translateY(0) rotate(90deg);

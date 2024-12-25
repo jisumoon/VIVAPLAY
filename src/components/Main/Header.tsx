@@ -132,35 +132,6 @@ const ProfileMenu = styled.div`
   }
 `;
 
-const TranslateButton = styled.button`
-  background: ${(props) => props.theme.blue.darker};
-  color: ${(props) => props.theme.white.lighter};
-  border: none;
-  border-radius: 5px;
-  padding: 5px 10px;
-  font-size: 14px;
-  cursor: pointer;
-  margin-left: 10px;
-  transition: background 0.3s ease;
-
-  &:hover {
-    background: ${(props) => props.theme.blue.lighter};
-  }
-`;
-
-const SearchContainer = styled.div`
-  position: relative;
-  width: 300px;
-`;
-
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 8px;
-  border: 1px solid ${(props) => props.theme.blue.darker};
-  border-radius: 4px;
-  outline: none;
-`;
-
 const SuggestionsList = styled.ul`
   display: flex;
   flex-direction: column;
@@ -280,7 +251,6 @@ const Header = () => {
     }
   };
 
-  // 로컬스토리지 확인
   useEffect(() => {
     const handleStorageChange = () => {
       const storedUsers = localStorage.getItem("users");
@@ -298,26 +268,63 @@ const Header = () => {
       }
     };
 
-    // storage 이벤트 리스너 등록
     window.addEventListener("storage", handleStorageChange);
-
-    // 초기 로드 시 상태 확인
     handleStorageChange();
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
     };
-  }, []);
+  }, [setIsLoggedIn, setIslogin, setUsername]);
 
   //로그아웃
+  // 로그아웃 핸들러
   const handleLogout = () => {
     localStorage.removeItem("users");
+
+    // 상태 변경
     setIsLoggedIn(false);
     setIslogin(false);
     setUsername("");
+
+    // 사용자 정의 이벤트 트리거
+    window.dispatchEvent(new Event("user-logout"));
+
     alert("로그아웃 되었습니다.");
     navigate("/");
   };
+
+  // storage 이벤트와 사용자 정의 이벤트 처리
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedUsers = localStorage.getItem("users");
+      if (storedUsers) {
+        const parsedUsers = JSON.parse(storedUsers);
+        if (Array.isArray(parsedUsers) && parsedUsers.length > 0) {
+          setIsLoggedIn(true);
+          setIslogin(true);
+          setUsername(parsedUsers[0].id);
+        }
+      } else {
+        setIsLoggedIn(false);
+        setIslogin(false);
+        setUsername("");
+      }
+    };
+
+    // storage 이벤트 감지
+    window.addEventListener("storage", handleStorageChange);
+
+    // 사용자 정의 이벤트 감지
+    window.addEventListener("user-logout", handleStorageChange);
+
+    // 초기 상태 확인
+    handleStorageChange();
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("user-logout", handleStorageChange);
+    };
+  }, [setIsLoggedIn, setIslogin, setUsername]);
 
   //스크롤 위치에 따라 헤더 변경
   useEffect(() => {
