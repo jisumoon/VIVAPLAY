@@ -189,17 +189,14 @@ const DetailMovieRight = ({
   useEffect(() => {
     if (nowMovie) {
       const fetchCertifications = async () => {
-        const results: Record<number, string> = {};
-        const data = await getCertification(nowMovie.id);
-        const krRelease = data.results.find(
-          (release: any) => release.iso_3166_1 === "KR"
-        );
-        results[nowMovie.id] =
-          krRelease && krRelease.release_dates.length > 0
-            ? krRelease.release_dates[0].certification || "15"
-            : "15";
-        setCertifications(results);
+        const certificationData = await getCertification(nowMovie.id);
+
+        setCertifications((prev) => ({
+          ...prev,
+          [certificationData.id]: certificationData.certification,
+        }));
       };
+
       fetchCertifications();
     }
   }, [nowMovie]);

@@ -187,13 +187,23 @@ const RandomMovieSlide = ({
   const fetchMoviesWithCertifications = async () => {
     if (randomMovie.length > 0) {
       const movieIds = randomMovie.map((movie) => movie.id);
-      const certificationsMap = await getCertificationsForMovies(movieIds);
+
+      const certificationsArray = await getCertificationsForMovies(movieIds);
+
+      const certificationsMap = certificationsArray.reduce(
+        (acc, { id, certification }) => {
+          acc[id] = certification;
+          return acc;
+        },
+        {} as Record<number, string>
+      );
 
       const updatedMovies = randomMovie.map((movie) => ({
         ...movie,
-        certification: certificationsMap[movie.id] || "미정", // 등급이 없으면 "미정"
+        certification: certificationsMap[movie.id] || "미정",
       }));
 
+      // 상태 업데이트
       setMoviesWithCertifications(updatedMovies);
     }
   };

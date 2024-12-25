@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { Movie, getMovies, getCertification } from "../api";
+import { Movie, getMovies, getCertificationsForMovies } from "../api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { makeImagePath } from "../utils";
@@ -109,8 +109,7 @@ const MovieGrid = styled.div`
   background: ${(props) => props.theme.black.lighter};
   border-radius: 14px;
   display: flex;
-  justify-content: center;
-  align-items: center;
+
   @media (max-width: 768px) {
     padding: 20px 10px;
   }
@@ -124,7 +123,7 @@ const GridWrap = styled.div`
   max-width: 1200px;
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-evenly;
+  justify-content: flex-start;
   gap: 40px;
   @media (max-width: 768px) {
     justify-content: center;
@@ -370,21 +369,25 @@ const Love = () => {
     UserData();
   }, []);
 
-  //등급 데이터
   useEffect(() => {
     const fetchCertifications = async () => {
-      const results: Record<number, string> = {};
-      for (const movie of favoriteMovies) {
-        const data = await getCertification(movie.id);
-        const krRelease = data.results.find(
-          (release: any) => release.iso_3166_1 === "KR"
+      if (favoriteMovies.length > 0) {
+        const movieIds = favoriteMovies.map((movie) => movie.id);
+
+        // 여러 영화 등급 데이터를 한 번에 가져오기
+        const certificationsArray = await getCertificationsForMovies(movieIds);
+
+        const certificationsMap = certificationsArray.reduce(
+          (acc, { id, certification }) => {
+            acc[id] = certification;
+            return acc;
+          },
+          {} as Record<number, string>
         );
-        results[movie.id] =
-          krRelease && krRelease.release_dates.length > 0
-            ? krRelease.release_dates[0].certification || "15"
-            : "15";
+
+        // 상태 업데이트
+        setCertifications(certificationsMap);
       }
-      setCertifications(results);
     };
 
     fetchCertifications();

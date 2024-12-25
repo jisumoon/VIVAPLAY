@@ -1,46 +1,61 @@
-# Getting Started with Create React App
+## 🌈 프로젝트 소개
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+- ViVaPlay 영화 소개 프로젝트는 TMDB API를 기반으로 제작된 영화 정보 제공 웹페이지입니다.
+- TMDB API를 활용하여 실시간으로 최신 영화 정보를 가져오고, 이를 TypeScript와 Styled-components를 사용해 사용자 친화적인 UI로 제공합니다.
+- 로컬 스토리지를 통해 사용자 데이터를 관리하며, 로그인 비밀번호는 해시화하여 안전하게 저장됩니다.
+- 반응형 디자인을 적용해 다양한 디바이스에서 최적화된 영화 검색 및 정보 열람 경험을 제공합니다.
 
-## Available Scripts
+## 🏡 개발 팀원 및 역할
 
-In the project directory, you can run:
+박제한: PM / 로그인 및 회원가입 기능 설계 및 디자인.
+백준혁: 로그인 및 회원가입 기능 구현.
+김령희: 상세 페이지 디자인 및 UI 구성.
+임다은: 로고 디자인 및 로고 기능 개발.
+문지수: 메인, 헤더, 푸터의 공통 디자인 및 제작.
+2차 유지보수: 김령희, 문지수.
 
-### `npm start`
+## 🕰️ 개발 기간
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- 기획 : 2024.11.07 ~ 2024.11.12
+- 디자인 : 2024.11.12 ~ 2024.11.22
+- 디자인 수정 및 보완: 2024.11.22
+- 개발 시작: 2024.11.22 ~ 2024.12.06
+- 유지보수 및 수정 단계: 2024.12.06 ~ 2024.12.08
+- 2차 유지보수 단계: 2024.12.10 ~ 2024.12.20
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## 🌎 개발 환경
 
-### `npm test`
+- TypeScript: 코드의 안정성과 가독성을 높이고, 정적 타입 검사로 런타임 오류를 최소화하기 위해 사용.
+- Styled-components: 컴포넌트 기반의 스타일링으로 코드의 재사용성과 유지보수성을 향상.
+- TMDB API: 최신 영화 정보와 데이터를 실시간으로 가져오기 위해 활용.
+- Motion: 인터랙티브 애니메이션 효과를 구현하여 사용자 경험(UX)을 향상.
+- Helmet: SEO 최적화를 위해 메타 태그 관리와 Open Graph 데이터 제공.
+- Figma: UI/UX 설계를 시각적으로 구체화하고, 협업 과정에서 효율적인 디자인 피드백 및 수정 작업을 지원.
+- Git: 코드 버전 관리와 팀원 간의 원활한 협업을 위해 사용.
+- Slack: 팀원 간 실시간 커뮤니케이션 및 작업 진행 상황 공유를 위해 활용.
+- Slick-slider: 메인 슬라이드 및 추천 영화 섹션에서 부드러운 전환 효과를 제공하기 위해 사용.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## ⚒️ 사이트 분석 및 수정 내역
 
-### `npm run build`
+- 2024/12/07: 검색 화면에서 필터 로직 최적화(검색 속도 개선).
+- 2024/12/09: 랜덤 슬라이더 이미지 비정상 출력 현상 수정.
+- 2024/12/15: 로컬 스토리지 데이터 업데이트 시 비밀번호 해시화 로직 강화.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 📚 주요 기능
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- 로컬 스토리지 비밀번호 저장: 비밀번호는 해시화하여 보관, 보안성 강화.
+- 자동 검색 기능: 검색창에 입력 시 TMDB API 기반으로 실시간으로 데이터를 가져오기기.
+- 검색 시 필터 기능: 입력된 검색어에 따라 대소문자 구분 없이 필터링 가능.
+- Helmet을 활용한 SEO 최적화: SEO 메타 태그 관리.
+- 탭 또는 리모컨 사용: 키보드, 리모컨 등을 통한 콘텐츠 간 이동 지원.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## ✨ Typescript Basic Rule
 
-### `npm run eject`
+- 타입 명시를 명확히 함으로써 코드의 안정성을 높임.
+- 컴포넌트 Props에 대해 interface 또는 type을 활용함으로써 재사용성과 가독성을 높임.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## 🧪 테스트 및 유지보수
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- UI/UX 테스트: 모든 페이지가 크로스 브라우징 호환이 가능한지 확인함.
+- 기능 테스트: 검색 및 카트 기능이 정상적으로 작동하는지 확인함.
+- 사용자 피드백을 통해 지속적으로 개선할 계획.

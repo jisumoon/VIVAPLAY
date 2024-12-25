@@ -164,52 +164,81 @@ export const getPopularMovies = () => {
     .then((data) => data.results || []);
 };
 
-const translateToKoreanCertification = (usCertification: string): string => {
+// 미국 영화등급 -> 한국영화등급
+const translateToKoreanCertification = (
+  usCertification: string,
+  krCertification?: string
+): string => {
   const certificationMap: Record<string, string> = {
-    G: "전체",
+    G: "ALL",
     PG: "12",
     "PG-13": "15",
     R: "19",
     "NC-17": "19",
-    NR: "미정",
-    "": "미정",
   };
 
-  return certificationMap[usCertification] || "미정"; // 매핑되지 않은 값은 "미정"
+  if (certificationMap[usCertification]) {
+    return certificationMap[usCertification];
+  }
+
+  if (krCertification) {
+    return krCertification;
+  }
+
+  switch (usCertification) {
+    case "NR":
+    case "":
+      return "미정";
+    default:
+      return "19";
+  }
 };
 
-// 여러 영화의 연령 등급을 한 번에 가져오기
-export const getCertificationsForMovies = async (movieIds: number[]) => {
-  const certificationPromises = movieIds.map(async (id) => {
-    const data = await getCertification(id);
+// 개별 영화 등급 가져오기
+export const getCertification = async (movieId: number) => {
+  try {
+    const response = await fetch(
+      `${BASE_PATH}/movie/${movieId}/release_dates?api_key=${API_KEY}`
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to fetch movie certification for ID: ${movieId}`);
+    }
+    const data = await response.json();
 
-    // 미국 (US) 데이터를 확인
-    const usRelease = data.results.find(
+    const usRelease = data.results?.find(
       (release: any) => release.iso_3166_1 === "US"
     );
+    const usCertification = usRelease?.release_dates?.[0]?.certification || "";
 
-    const usCertification =
-      usRelease?.release_dates?.[0]?.certification || "NR";
+    const krRelease = data.results?.find(
+      (release: any) => release.iso_3166_1 === "KR"
+    );
+    const krCertification = krRelease?.release_dates?.[0]?.certification || "";
 
-    const koreanCertification = translateToKoreanCertification(usCertification);
+    const koreanCertification = translateToKoreanCertification(
+      usCertification,
+      krCertification
+    );
 
-    return { id, certification: koreanCertification };
-  });
-
-  const results = await Promise.all(certificationPromises);
-
-  // 영화 ID를 키로, 한국식 등급을 값
-  return results.reduce(
-    (acc, { id, certification }) => ({ ...acc, [id]: certification }),
-    {} as Record<number, string>
-  );
+    return {
+      id: movieId,
+      usCertification,
+      krCertification,
+      certification: koreanCertification,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      id: movieId,
+      usCertification: "",
+      krCertification: "",
+      certification: "미정",
+    };
+  }
 };
 
-// 영화 연령 등급 API 호출
-export const getCertification = async (movieId: number) => {
-  const response = await fetch(
-    `${BASE_PATH}/movie/${movieId}/release_dates?api_key=${API_KEY}`
-  );
-  const data = await response.json();
-  return data;
+// 여러 영화 등급 가져오기
+export const getCertificationsForMovies = async (movieIds: number[]) => {
+  const results = await Promise.all(movieIds.map((id) => getCertification(id)));
+  return results;
 };

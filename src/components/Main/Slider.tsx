@@ -207,19 +207,29 @@ const SliderComponent: React.FC<SliderProps> = ({ movies, title }) => {
   // 영화 등급 가져오기 함수
   const fetchMoviesWithCertifications = async () => {
     const movieIds = movies.map((movie) => movie.id);
-    const certificationsMap = await getCertificationsForMovies(movieIds);
 
+    const certificationsArray = await getCertificationsForMovies(movieIds);
+
+    const certificationsMap = certificationsArray.reduce(
+      (acc, { id, certification }) => {
+        acc[id] = certification;
+        return acc;
+      },
+      {} as Record<number, string> // 타입 명시
+    );
+
+    // 기존 영화 데이터에 등급 추가
     const updatedMovies = movies.map((movie) => ({
       ...movie,
-      certification: certificationsMap[movie.id] || "15", // 기본값 "미정"
+      certification: certificationsMap[movie.id] || "15",
     }));
 
+    // 상태 업데이트
     setMoviesWithCertifications(updatedMovies);
   };
 
   useEffect(() => {
     fetchMoviesWithCertifications();
-    console.log(movies);
   }, [movies]);
 
   //리모컨 핸들러

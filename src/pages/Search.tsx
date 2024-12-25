@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router-dom"; // useNavigate 추가
 import styled from "styled-components";
-import { searchContents, getCertification, GetMoviesResult } from "../api";
+import {
+  searchContents,
+  getCertificationsForMovies,
+  GetMoviesResult,
+} from "../api";
 import { makeImagePath } from "../utils";
 import Pagination from "react-js-pagination";
 import RandomMovieSlide from "../components/Main/RandomMovieSlide";
@@ -70,7 +74,7 @@ const Contents = styled.div`
 
 const MovieGrid = styled.div`
   height: 100%;
-  min-height: 1280px;
+  height: aut0;
   padding: 80px 20px;
   background-color: ${(props) => props.theme.black.lighter};
   border-radius: 14px;
@@ -253,6 +257,29 @@ const RandomWrap = styled.div`
   padding: 30px 40px 30px;
 `;
 
+const FilterWrap = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+  padding: 0 20px;
+  span {
+    margin-right: 20px;
+    cursor: pointer;
+    font-size: 16px;
+    color: ${(props) => props.theme.white.darker};
+    transition: color 0.3s;
+
+    &:hover {
+      color: ${(props) => props.theme.blue.lighter};
+    }
+
+    &.active {
+      font-weight: bold;
+      color: ${(props) => props.theme.blue.darker};
+    }
+  }
+`;
+
 const Search = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -268,6 +295,7 @@ const Search = () => {
   );
   const [focusedIndex, setFocusedIndex] = useState(0); // 리모컨 포커스 인덱스
   const [isFocused, setIsFocused] = useState(false); // 포커스 상태
+  const [sortType, setSortType] = useState("latest"); // 기본 정렬: 최신순
 
   //반응형
   useEffect(() => {
@@ -298,34 +326,44 @@ const Search = () => {
       queryFn: () => searchContents(keyword),
     });
 
-  //현재 보여줄 페이지 제한
-  const currentMovies = (movieData?.results || [])
-    .filter((movie) => movie?.id) // id가 있는 영화만 포함
-    .slice((currentPage - 1) * moviesPerPage, currentPage * moviesPerPage);
+  const sortedMovies = (movieData?.results || []).sort((a, b) => {
+    if (sortType === "latest") {
+      return (
+        new Date(b.release_date).getTime() - new Date(a.release_date).getTime()
+      );
+    } else if (sortType === "reviews") {
+      return (b.vote_count || 0) - (a.vote_count || 0);
+    }
+    return 0;
+  });
 
-  //등급
+  const currentMovies = sortedMovies.slice(
+    (currentPage - 1) * moviesPerPage,
+    currentPage * moviesPerPage
+  );
+
   useEffect(() => {
     const fetchCertifications = async () => {
-      const results: Record<number, string> = {};
-      for (const movie of currentMovies) {
-        const data = await getCertification(movie.id);
-        const krRelease = data.results.find(
-          (release: any) => release.iso_3166_1 === "KR"
+      if (currentMovies.length > 0) {
+        const movieIds = currentMovies.map((movie) => movie.id);
+
+        const certificationsArray = await getCertificationsForMovies(movieIds);
+        const certificationsMap = certificationsArray.reduce(
+          (acc, { id, certification }) => {
+            acc[id] = certification;
+            return acc;
+          },
+          {} as Record<number, string>
         );
-        results[movie.id] =
-          krRelease && krRelease.release_dates.length > 0
-            ? krRelease.release_dates[0].certification || "15"
-            : "15";
+
+        setCertifications(certificationsMap);
       }
-      setCertifications(results);
     };
 
-    if (currentMovies.length > 0) {
-      fetchCertifications();
-    }
+    fetchCertifications();
   }, [currentMovies]);
 
-  //리모컨컨
+  //리모컨
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isFocused) return; // 포커스가 없으면 리모컨 동작 무시
@@ -433,6 +471,26 @@ const Search = () => {
         <ContentsWrap>
           <Contents>
             <MovieGrid>
+              <FilterWrap>
+                <span
+                  className={sortType === "latest" ? "active" : ""}
+                  onClick={() => {
+                    setSortType("latest");
+                    setCurrentPage(1);
+                  }}
+                >
+                  • 최신순
+                </span>
+                <span
+                  className={sortType === "reviews" ? "active" : ""}
+                  onClick={() => {
+                    setSortType("reviews");
+                    setCurrentPage(1);
+                  }}
+                >
+                  • 리뷰순
+                </span>
+              </FilterWrap>
               <GridWrap>
                 {currentMovies.map((movie) => (
                   <MovieCard key={movie.id} onClick={() => onDetail(movie.id)}>
