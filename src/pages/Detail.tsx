@@ -3,13 +3,13 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import YouTube from "react-youtube";
 import styled from "styled-components";
-import DtailCastSlide from "../components/DtailCastSlide";
-import RandomMovieSlide from "../../src/components/Main/RandomMovieSlide";
-import DetailMovieRight from "../components/DetailMovieRight";
+import DtailCastSlide from "../components/Detail/DtailCastSlide";
+import RandomMovieSlide from "../components/Detail/RandomMovieSlide";
+import DetailMovieRight from "../components/Detail/DetailMovieRight";
 import { useEffect, useState } from "react";
 import Loading from "../components/Loading";
 import { Helmet } from "react-helmet";
-import { makeImagePath } from "../utils";
+import { makeImagePath } from "../utils/utils";
 
 const Container = styled.div`
   background-color: ${(props) => props.theme.black.veryDark};

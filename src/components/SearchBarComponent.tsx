@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { getAutocompleteResults, getPopularMovies } from "../api";
-import { makeImagePath } from "../utils";
+import { makeImagePath } from "../utils/utils";
 
 const Wrapper = styled.div`
   display: flex;

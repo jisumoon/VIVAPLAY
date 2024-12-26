@@ -2,7 +2,7 @@ import ReactDOM from "react-dom/client";
 import { RecoilRoot } from "recoil";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "react-router-dom";
-import router from "./Router";
+import router from "../src/layouts/Router";
 
 const queryClient = new QueryClient();
 

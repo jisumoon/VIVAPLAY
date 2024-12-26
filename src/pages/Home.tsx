@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
 import { getMovies, GetMoviesResult } from "../api";
-import { makeImagePath } from "../utils";
+import { makeImagePath } from "../utils/utils";
 import { useNavigate } from "react-router-dom";
 import SliderComponent from "../components/Main/Slider";
 import TopSlider from "../components/Main/TopSlider";

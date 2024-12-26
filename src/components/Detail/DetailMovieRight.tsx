@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { ReviewResult, getCertification, getReviews, IdMovie } from "../api";
+import { ReviewResult, getCertification, getReviews, IdMovie } from "../../api";
 import { useQuery } from "@tanstack/react-query";
 
 const RightWrap = styled.div`

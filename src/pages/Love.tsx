@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { Movie, getMovies, getCertificationsForMovies } from "../api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
-import { makeImagePath } from "../utils";
+import { makeImagePath } from "../utils/utils";
 import Pagination from "react-js-pagination";
 import { Helmet } from "react-helmet";
-import RandomMovieSlide from "../components/Main/RandomMovieSlide";
+import RandomMovieSlide from "../components/Detail/RandomMovieSlide";
 
 const Container = styled.div`
   width: 100%;

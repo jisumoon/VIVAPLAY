@@ -7,7 +7,7 @@ import { getAutocompleteResults } from "../../api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { useRecoilState } from "recoil";
-import { islogin } from "../../atom";
+import { islogin } from "../../recoil/atom";
 
 const Nav = styled(motion.nav)<{ $isScrolled: boolean }>`
   width: 100%;

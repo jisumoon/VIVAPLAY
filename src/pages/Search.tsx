@@ -7,9 +7,9 @@ import {
   getCertificationsForMovies,
   GetMoviesResult,
 } from "../api";
-import { makeImagePath } from "../utils";
+import { makeImagePath } from "../utils/utils";
 import Pagination from "react-js-pagination";
-import RandomMovieSlide from "../components/Main/RandomMovieSlide";
+import RandomMovieSlide from "../components/Detail/RandomMovieSlide";
 import { Helmet } from "react-helmet";
 
 const Container = styled.div`

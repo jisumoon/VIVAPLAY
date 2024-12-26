@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { makeImagePath } from "../../utils";
+import { makeImagePath } from "../../utils/utils";
 import { useNavigate } from "react-router-dom";
 import { getPopularMovies, Movie } from "../../api";
 

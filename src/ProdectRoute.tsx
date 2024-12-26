@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { islogin } from "./atom";
+import { islogin } from "./recoil/atom";
 import { useRecoilValue } from "recoil";
 
 interface ProdectRoute {

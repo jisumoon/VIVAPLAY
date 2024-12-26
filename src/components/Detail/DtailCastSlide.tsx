@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { makeImagePath } from "../utils";
-import { getCredits } from "../api";
+import { makeImagePath } from "../../utils/utils";
+import { getCredits } from "../../api";
 
 const Title = styled.h3`
   color: ${({ theme }) => theme.white.lighter};

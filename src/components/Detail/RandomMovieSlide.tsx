@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useCallback } from "react";
 import styled from "styled-components";
-import { makeImagePath } from "../../utils";
+import { makeImagePath } from "../../utils/utils";
 import { getCertificationsForMovies, getMovies, Movie } from "../../api";
 import { useNavigate } from "react-router-dom";
 

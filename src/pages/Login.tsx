@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ReactComponent as VivaPlayLogo } from "../vivaplay.svg";
 import { useRecoilState } from "recoil";
-import { islogin } from "../atom";
+import { islogin } from "../recoil/atom";
 import { Helmet } from "react-helmet";
 
 const Wrapper = styled.div`
