@@ -1,11 +1,11 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { createGlobalStyle, ThemeProvider } from "styled-components";
-import theme from "./theme";
+import theme from "../styles/theme";
 import styled from "styled-components";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import MobileHeader from "./components/MobileHeader";
-import Header from "./components/Main/Header";
+import MobileHeader from "../components/MobileHeader";
+import Header from "../components/Main/Header";
 
 const GlobalStyle = createGlobalStyle`
   @font-face {
